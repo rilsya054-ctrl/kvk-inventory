@@ -329,30 +329,31 @@ export const RegisterPage: React.FC = () => {
                         key={userAcc.id}
                         onClick={() => handleSelectUser(userAcc)}
                         style={{
-                          padding: '0.65rem 1rem',
+                          padding: '0.85rem 1rem',
                           cursor: 'pointer',
-                          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                          borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           transition: 'background 0.15s ease',
+                          minHeight: '52px',
                         }}
                         onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(99, 102, 241, 0.18)')}
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
                         <div>
-                          <div style={{ fontWeight: 600, fontSize: '0.88rem', color: '#f8fafc' }}>
+                          <div style={{ fontWeight: 600, fontSize: '0.92rem', color: '#f8fafc' }}>
                             {userAcc.name}
                           </div>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                             {userAcc.workshop}
                           </div>
                         </div>
                         <span style={{
-                          fontSize: '0.7rem',
+                          fontSize: '0.72rem',
                           fontWeight: 700,
-                          padding: '0.15rem 0.45rem',
-                          borderRadius: '4px',
+                          padding: '0.2rem 0.5rem',
+                          borderRadius: '6px',
                           background: userAcc.role === 'Ketua Bengkel' ? 'rgba(168, 85, 247, 0.2)' : userAcc.role === 'PIC' ? 'rgba(6, 182, 212, 0.2)' : 'rgba(148, 163, 184, 0.2)',
                           color: userAcc.role === 'Ketua Bengkel' ? '#c084fc' : userAcc.role === 'PIC' ? '#22d3ee' : '#94a3b8'
                         }}>
@@ -379,6 +380,8 @@ export const RegisterPage: React.FC = () => {
                 id="login-pin-input"
                 ref={pinInputRef}
                 type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 maxLength={4}
                 className="input-field"
                 placeholder="••••"
@@ -388,11 +391,12 @@ export const RegisterPage: React.FC = () => {
                 style={{
                   width: '100%',
                   boxSizing: 'border-box',
-                  fontSize: '1.25rem',
+                  fontSize: '1.35rem',
                   letterSpacing: '0.4em',
                   textAlign: 'center',
-                  paddingTop: '0.65rem',
-                  paddingBottom: '0.65rem',
+                  paddingTop: '0.75rem',
+                  paddingBottom: '0.75rem',
+                  minHeight: '48px',
                 }}
               />
             </div>
@@ -513,6 +517,8 @@ export const RegisterPage: React.FC = () => {
               <input
                 id="reg-pin-input"
                 type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 maxLength={4}
                 className="input-field"
                 placeholder="Contoh: 5678"

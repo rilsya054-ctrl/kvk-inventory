@@ -237,6 +237,27 @@ export const DashboardPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('Semua Status');
   const [filterAbjad, setFilterAbjad] = useState('Semua Abjad');
 
+  // View mode for inventory items: 'card' (default on mobile) | 'table'
+  const [itemViewMode, setItemViewMode] = useState<'card' | 'table'>(() => {
+    try {
+      if (typeof window !== 'undefined' && window.innerWidth <= 768) return 'card';
+      return (localStorage.getItem('kv_item_view_mode') as 'card' | 'table') || 'card';
+    } catch {
+      return 'card';
+    }
+  });
+
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  const handleToggleViewMode = (mode: 'card' | 'table') => {
+    setItemViewMode(mode);
+    try {
+      localStorage.setItem('kv_item_view_mode', mode);
+    } catch {
+      // ignore
+    }
+  };
+
   // Audit Log filter tab
   type AuditFilterType = 'Semua' | 'TAMBAH' | 'KEMASKINI' | 'PADAM' | 'PINDAH';
   const [auditLogFilter, setAuditLogFilter] = useState<AuditFilterType>('Semua');
@@ -1671,142 +1692,83 @@ export const DashboardPage: React.FC = () => {
 
         {activeTab === 'inventori' && (
           <div className="glass-panel" style={{ padding: '2rem' }}>
-            <div className="inventory-controls" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            <div className="inventory-controls" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.25rem' }}>
+              
+              {/* Row 1: Search Bar + View Mode Toggle + Advanced Filter Toggle */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', width: '100%' }}>
-                
-                {/* Left side: Search Wrapper & Horizontal Filters */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexGrow: 1, flexWrap: 'wrap' }}>
-                  <div className="search-wrapper" style={{ minWidth: '200px', maxWidth: '280px', flexGrow: 1 }}>
-                    <span className="search-icon" style={{ fontSize: '0.85rem' }}>🔍</span>
+                  
+                  {/* Search Input with Clear Button */}
+                  <div className="search-wrapper" style={{ minWidth: '220px', maxWidth: '340px', flexGrow: 1, position: 'relative' }}>
+                    <span className="search-icon" style={{ fontSize: '0.95rem' }}>🔍</span>
                     <input
                       type="text"
-                      placeholder="Cari barang..."
+                      placeholder="Cari alatan, kod SKU, lokasi..."
                       className="input-field search-input"
-                      style={{ fontSize: '0.75rem', paddingLeft: '2.2rem', paddingTop: '0.4rem', paddingBottom: '0.4rem', height: 'auto' }}
+                      style={{ fontSize: '0.88rem', paddingLeft: '2.4rem', paddingRight: searchTerm ? '2.2rem' : '1rem', minHeight: '42px' }}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
+                    {searchTerm && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchTerm('')}
+                        style={{
+                          position: 'absolute',
+                          right: '0.75rem',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--text-muted)',
+                          fontSize: '1rem',
+                          cursor: 'pointer',
+                          padding: '2px',
+                        }}
+                        title="Kosongkan carian"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
 
-                  {/* 7 Dropdowns Penapis */}
-                  <div className="filters-group-responsive" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                    
-                    {/* 1. Jenis */}
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ minWidth: '100px' }}
-                      value={filterJenis}
-                      onChange={(e) => setFilterJenis(e.target.value)}
-                    >
-                      <option value="Semua Jenis">Semua Jenis</option>
-                      <option value="PERALATAN">PERALATAN</option>
-                      <option value="BARANG LUAK">BARANG LUAK</option>
-                    </select>
-
-                    {/* 2. Kategori */}
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ minWidth: '195px' }}
-                      value={filterKategori}
-                      onChange={(e) => setFilterKategori(e.target.value)}
-                    >
-                      <option value="Semua Kategori" style={{ background: '#0f172a', color: '#f1f5f9' }}>Semua Kategori</option>
-                      {workshopCategories.map(cat => (
-                        <option key={cat.code} value={cat.code} style={{ background: '#0f172a', color: '#f1f5f9' }}>
-                          {cat.code} — {cat.label}
-                        </option>
-                      ))}
-                    </select>
-
-                    {/* 3. Kod / SKU */}
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer max-w-[120px]"
-                      value={filterKod}
-                      onChange={(e) => setFilterKod(e.target.value)}
-                    >
-                      <option value="Semua Kod">Semua Kod</option>
-                      {uniqueSkus.map(sku => (
-                        <option key={sku} value={sku}>{sku}</option>
-                      ))}
-                    </select>
-
-                    {/* 4. Seksyen */}
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ minWidth: '110px' }}
-                      value={filterSeksyen}
-                      onChange={(e) => setFilterSeksyen(e.target.value)}
-                    >
-                      <option value="Semua Seksyen">Semua Seksyen</option>
-                      {uniqueSeksyens.map(sec => (
-                        <option key={sec} value={sec}>{sec}</option>
-                      ))}
-                    </select>
-
-                    {/* 5. Kedudukan */}
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ minWidth: '110px' }}
-                      value={filterKedudukan}
-                      onChange={(e) => setFilterKedudukan(e.target.value)}
-                    >
-                      <option value="Semua Kedudukan">Semua Kedudukan</option>
-                      {uniqueLocations.map(loc => (
-                        <option key={loc} value={loc}>{loc}</option>
-                      ))}
-                    </select>
-
-                    {/* 6. Status */}
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ minWidth: '110px' }}
-                      value={filterStatus}
-                      onChange={(e) => setFilterStatus(e.target.value)}
-                    >
-                      <option value="Semua Status">Semua Status</option>
-                      <option value="Tersedia">Tersedia</option>
-                      <option value="Stok Rendah">Stok Rendah</option>
-                      <option value="Kehabisan Stok">Kehabisan Stok</option>
-                    </select>
-
-                    {/* 7. Carian Huruf / Abjad */}
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ minWidth: '100px' }}
-                      value={filterAbjad}
-                      onChange={(e) => setFilterAbjad(e.target.value)}
-                    >
-                      <option value="Semua Abjad">Semua Abjad</option>
-                      {Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).map(char => (
-                        <option key={char} value={char}>{char}</option>
-                      ))}
-                    </select>
-
-                    {/* Reset Button */}
+                  {/* View Mode Switcher: [ 📱 Kad ] [ 📑 Jadual ] */}
+                  <div className="view-mode-toggle" title="Tukar Mod Paparan">
                     <button
                       type="button"
-                      onClick={handleResetFilters}
-                      title="Reset semua penapis"
-                      style={{
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.3rem',
-                        backgroundColor: '#1e293b',
-                        border: '1px solid #475569',
-                        color: '#f8fafc',
-                        borderRadius: '0.5rem',
-                        fontSize: '0.75rem',
-                        padding: '0.375rem 0.5rem',
-                        transition: 'background-color 0.15s',
-                        whiteSpace: 'nowrap',
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#334155')}
-                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1e293b')}
+                      className={`view-mode-btn ${itemViewMode === 'card' ? 'active' : ''}`}
+                      onClick={() => handleToggleViewMode('card')}
                     >
-                      🔄 Reset
+                      <span>📱</span> Kad
+                    </button>
+                    <button
+                      type="button"
+                      className={`view-mode-btn ${itemViewMode === 'table' ? 'active' : ''}`}
+                      onClick={() => handleToggleViewMode('table')}
+                    >
+                      <span>📑</span> Jadual
                     </button>
                   </div>
+
+                  {/* Advanced Filter Toggle Button */}
+                  <button
+                    type="button"
+                    className={`advanced-filter-toggle ${[
+                      filterJenis !== 'Semua Jenis',
+                      filterKategori !== 'Semua Kategori',
+                      filterKod !== 'Semua Kod',
+                      filterSeksyen !== 'Semua Seksyen',
+                      filterKedudukan !== 'Semua Kedudukan',
+                      filterStatus !== 'Semua Status',
+                      filterAbjad !== 'Semua Abjad',
+                    ].some(Boolean) ? 'has-active' : ''}`}
+                    onClick={() => setShowAdvancedFilters(prev => !prev)}
+                    title="Buka atau tutup penapis terperinci"
+                  >
+                    <span>⚙️</span>
+                    <span>Penapis Terperinci</span>
+                    <span>{showAdvancedFilters ? '▲' : '▼'}</span>
+                  </button>
                 </div>
 
                 {/* Right side: Action buttons */}
@@ -1963,6 +1925,207 @@ export const DashboardPage: React.FC = () => {
                 )}
 
               </div>
+
+              {/* Row 2: 1-Tap Quick Filter Chips */}
+              <div className="quick-chips-scroll">
+                <button
+                  type="button"
+                  className={`filter-chip ${filterJenis === 'Semua Jenis' && filterStatus === 'Semua Status' ? 'active' : ''}`}
+                  onClick={() => {
+                    setFilterJenis('Semua Jenis');
+                    setFilterStatus('Semua Status');
+                  }}
+                >
+                  Semua ({items.length})
+                </button>
+                <button
+                  type="button"
+                  className={`filter-chip ${filterJenis === 'PERALATAN' ? 'active' : ''}`}
+                  onClick={() => setFilterJenis(prev => prev === 'PERALATAN' ? 'Semua Jenis' : 'PERALATAN')}
+                >
+                  🔧 Peralatan ({items.filter(i => i.kategori === 'peralatan').length})
+                </button>
+                <button
+                  type="button"
+                  className={`filter-chip ${filterJenis === 'BARANG LUAK' ? 'active' : ''}`}
+                  onClick={() => setFilterJenis(prev => prev === 'BARANG LUAK' ? 'Semua Jenis' : 'BARANG LUAK')}
+                >
+                  🧪 Barang Luak ({items.filter(i => i.kategori === 'habis_pakai').length})
+                </button>
+                <button
+                  type="button"
+                  className={`filter-chip ${filterStatus === 'Stok Rendah' ? 'active' : ''}`}
+                  onClick={() => setFilterStatus(prev => prev === 'Stok Rendah' ? 'Semua Status' : 'Stok Rendah')}
+                >
+                  ⚠️ Stok Rendah ({items.filter(i => i.quantity > 0 && i.quantity <= i.stokMinima).length})
+                </button>
+                <button
+                  type="button"
+                  className={`filter-chip ${filterStatus === 'Kehabisan Stok' ? 'active' : ''}`}
+                  onClick={() => setFilterStatus(prev => prev === 'Kehabisan Stok' ? 'Semua Status' : 'Kehabisan Stok')}
+                >
+                  🔴 Habis ({items.filter(i => i.quantity === 0).length})
+                </button>
+                {[
+                  filterJenis !== 'Semua Jenis',
+                  filterKategori !== 'Semua Kategori',
+                  filterKod !== 'Semua Kod',
+                  filterSeksyen !== 'Semua Seksyen',
+                  filterKedudukan !== 'Semua Kedudukan',
+                  filterStatus !== 'Semua Status',
+                  filterAbjad !== 'Semua Abjad',
+                  searchTerm !== '',
+                ].some(Boolean) && (
+                  <button
+                    type="button"
+                    className="filter-chip"
+                    onClick={handleResetFilters}
+                    style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                    title="Kosongkan semua penapis"
+                  >
+                    🔄 Reset (
+                    {
+                      [
+                        filterJenis !== 'Semua Jenis',
+                        filterKategori !== 'Semua Kategori',
+                        filterKod !== 'Semua Kod',
+                        filterSeksyen !== 'Semua Seksyen',
+                        filterKedudukan !== 'Semua Kedudukan',
+                        filterStatus !== 'Semua Status',
+                        filterAbjad !== 'Semua Abjad',
+                        searchTerm !== '',
+                      ].filter(Boolean).length
+                    }
+                    )
+                  </button>
+                )}
+              </div>
+
+              {/* Row 3: Collapsible Advanced Filter Dropdowns */}
+              {showAdvancedFilters && (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                  gap: '0.6rem',
+                  padding: '0.85rem',
+                  background: 'rgba(15, 23, 42, 0.65)',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                }}>
+                  {/* 1. Jenis */}
+                  <div>
+                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>JENIS</label>
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ width: '100%', height: '36px' }}
+                      value={filterJenis}
+                      onChange={(e) => setFilterJenis(e.target.value)}
+                    >
+                      <option value="Semua Jenis">Semua Jenis</option>
+                      <option value="PERALATAN">PERALATAN</option>
+                      <option value="BARANG LUAK">BARANG LUAK</option>
+                    </select>
+                  </div>
+
+                  {/* 2. Kategori */}
+                  <div>
+                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>KATEGORI</label>
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ width: '100%', height: '36px' }}
+                      value={filterKategori}
+                      onChange={(e) => setFilterKategori(e.target.value)}
+                    >
+                      <option value="Semua Kategori">Semua Kategori</option>
+                      {workshopCategories.map(cat => (
+                        <option key={cat.code} value={cat.code}>
+                          {cat.code} — {cat.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 3. Kod / SKU */}
+                  <div>
+                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>KOD / SKU</label>
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ width: '100%', height: '36px' }}
+                      value={filterKod}
+                      onChange={(e) => setFilterKod(e.target.value)}
+                    >
+                      <option value="Semua Kod">Semua Kod</option>
+                      {uniqueSkus.map(sku => (
+                        <option key={sku} value={sku}>{sku}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 4. Seksyen */}
+                  <div>
+                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>SEKSYEN</label>
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ width: '100%', height: '36px' }}
+                      value={filterSeksyen}
+                      onChange={(e) => setFilterSeksyen(e.target.value)}
+                    >
+                      <option value="Semua Seksyen">Semua Seksyen</option>
+                      {uniqueSeksyens.map(sec => (
+                        <option key={sec} value={sec}>{sec}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 5. Kedudukan */}
+                  <div>
+                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>KEDUDUKAN</label>
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ width: '100%', height: '36px' }}
+                      value={filterKedudukan}
+                      onChange={(e) => setFilterKedudukan(e.target.value)}
+                    >
+                      <option value="Semua Kedudukan">Semua Kedudukan</option>
+                      {uniqueLocations.map(loc => (
+                        <option key={loc} value={loc}>{loc}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 6. Status */}
+                  <div>
+                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>STATUS</label>
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ width: '100%', height: '36px' }}
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                    >
+                      <option value="Semua Status">Semua Status</option>
+                      <option value="Tersedia">Tersedia</option>
+                      <option value="Stok Rendah">Stok Rendah</option>
+                      <option value="Kehabisan Stok">Kehabisan Stok</option>
+                    </select>
+                  </div>
+
+                  {/* 7. Abjad */}
+                  <div>
+                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>ABJAD (A-Z)</label>
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ width: '100%', height: '36px' }}
+                      value={filterAbjad}
+                      onChange={(e) => setFilterAbjad(e.target.value)}
+                    >
+                      <option value="Semua Abjad">Semua Abjad</option>
+                      {Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).map(char => (
+                        <option key={char} value={char}>{char}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
 
             {searchedItems.length === 0 ? (
@@ -1970,6 +2133,129 @@ export const DashboardPage: React.FC = () => {
                 <span className="empty-icon">🔍</span>
                 <h4>Tiada hasil dijumpai</h4>
                 <p>Cuba kata kunci carian yang lain atau daftarkan barang baru.</p>
+              </div>
+            ) : itemViewMode === 'card' ? (
+              <div className="inventory-card-grid">
+                {searchedItems.map((item) => {
+                  const skuPrefix = item.sku.split('-')[0].toUpperCase();
+                  const kategoriCode = skuPrefix || (item.kategori === 'peralatan' ? 'AT' : 'AK');
+                  const badgeStyles = getCategoryBadgeStyles(kategoriCode);
+                  const isOut = item.quantity === 0;
+                  const isLow = !isOut && item.quantity <= item.stokMinima;
+
+                  return (
+                    <div key={item.id} className="inventory-item-card">
+                      {/* Card Header */}
+                      <div className="item-card-header">
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div className="item-card-name">{item.name}</div>
+                          <div className="item-card-sub">
+                            {item.brand ? <span style={{ textTransform: 'uppercase', marginRight: '6px', color: '#94a3b8' }}>{item.brand} • </span> : null}
+                            <span className="sku-text">{item.sku}</span>
+                          </div>
+                        </div>
+                        <span
+                          className="item-card-badge"
+                          style={{
+                            background: badgeStyles.bg,
+                            color: badgeStyles.color,
+                            border: `1px solid ${badgeStyles.border}`,
+                          }}
+                        >
+                          {kategoriCode}
+                        </span>
+                      </div>
+
+                      {/* Card Meta Grid */}
+                      <div className="item-card-meta-grid">
+                        <div className="item-meta-item">
+                          <span className="item-meta-label">Kedudukan</span>
+                          <span className="item-meta-value">📍 {item.location || '-'}</span>
+                        </div>
+                        <div className="item-meta-item">
+                          <span className="item-meta-label">Jenis</span>
+                          <span className="item-meta-value">
+                            {item.kategori === 'peralatan' ? '🔧 Peralatan' : '🧪 Barang Luak'}
+                          </span>
+                        </div>
+                        <div className="item-meta-item">
+                          <span className="item-meta-label">Status</span>
+                          <span className="item-meta-value">
+                            {isOut ? (
+                              <span className="badge-status out">Habis Stok</span>
+                            ) : isLow ? (
+                              <span className="badge-status low">Stok Rendah</span>
+                            ) : (
+                              <span className="badge-status available">Tersedia</span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="item-meta-item">
+                          <span className="item-meta-label">Baki Stok</span>
+                          <span
+                            className="item-meta-value item-stock-highlight"
+                            style={{
+                              color: isOut ? 'var(--danger)' : isLow ? 'var(--warning)' : 'var(--text-primary)'
+                            }}
+                          >
+                            {item.quantity}
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                              / {item.totalQuantity} {item.unit}
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card Actions */}
+                      <div className="item-card-actions">
+                        {user.role === 'Pensyarah' ? (
+                          <button
+                            onClick={() => handleOpenBorrowModal(item)}
+                            className="btn item-card-btn-primary"
+                            disabled={isOut}
+                            style={{
+                              background: item.kategori === 'peralatan'
+                                ? 'linear-gradient(135deg, var(--primary), #4338ca)'
+                                : 'linear-gradient(135deg, var(--secondary), #0e7490)',
+                            }}
+                          >
+                            {item.kategori === 'peralatan' ? '🔀 Mohon Pinjam' : '🧪 Mohon Ambil'}
+                          </button>
+                        ) : (
+                          <div className="item-card-btn-row">
+                            <button
+                              onClick={() => {
+                                setSelectedItem(item);
+                                setIsTransferModalOpen(true);
+                              }}
+                              className="btn btn-secondary item-card-action-btn"
+                              disabled={isOut}
+                              title="Pindah ke stor lain"
+                              style={{ color: '#c084fc', borderColor: 'rgba(192,132,252,0.3)', background: 'rgba(192,132,252,0.08)' }}
+                            >
+                              ⇄ Pindah
+                            </button>
+                            <button
+                              onClick={() => handleOpenEditModal(item)}
+                              className="btn btn-secondary item-card-action-btn"
+                              title="Kemas kini maklumat barang"
+                              style={{ color: '#818cf8', borderColor: 'rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)' }}
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteItem(item.id)}
+                              className="btn btn-danger item-card-action-btn"
+                              title="Padam barang dari stor"
+                            >
+                              🗑️ Padam
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="table-container">
