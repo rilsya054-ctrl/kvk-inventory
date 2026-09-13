@@ -190,6 +190,23 @@ export const DashboardPage: React.FC = () => {
     }
   });
 
+  // Mobile Drawer State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile drawer on Esc key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const navigateTab = (tab: TabType) => {
+    setActiveTab(tab);
+    setIsMobileMenuOpen(false);
+  };
+
   const toggleSidebar = () => {
     setIsSidebarCollapsed(prev => {
       const next = !prev;
@@ -901,8 +918,15 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="dashboard-wrapper">
-      {/* Sidebar */}
-      <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+      {/* Mobile Drawer Backdrop Overlay */}
+      <div
+        className={`mobile-drawer-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* Sidebar (Desktop Sticky & Mobile Slide-Over Drawer) */}
+      <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-brand">
           <div className="sidebar-brand-left">
             {orgSettings.logoUrl ? (
@@ -933,16 +957,26 @@ export const DashboardPage: React.FC = () => {
           >
             {isSidebarCollapsed ? '❯' : '❮'}
           </button>
+          {/* Mobile Drawer Close Button */}
+          <button
+            type="button"
+            className="mobile-drawer-close-btn"
+            onClick={() => setIsMobileMenuOpen(false)}
+            title="Tutup Menu"
+            aria-label="Tutup Menu"
+          >
+            ✕
+          </button>
         </div>
 
         <ul className="sidebar-menu">
           <li className={`sidebar-item ${activeTab === 'dashboard' ? 'active' : ''}`}>
-            <button onClick={() => setActiveTab('dashboard')} title={isSidebarCollapsed ? 'Dashboard' : undefined}>
+            <button onClick={() => navigateTab('dashboard')} title={isSidebarCollapsed ? 'Dashboard' : undefined}>
               {iconHome} <span className="sidebar-label">Dashboard</span>
             </button>
           </li>
           <li className={`sidebar-item ${activeTab === 'inventori' ? 'active' : ''}`}>
-            <button onClick={() => setActiveTab('inventori')} title={isSidebarCollapsed ? 'Inventori' : undefined}>
+            <button onClick={() => navigateTab('inventori')} title={isSidebarCollapsed ? 'Inventori' : undefined}>
               {iconBox} <span className="sidebar-label">Inventori</span>
               <span className="tab-badge">{totalItemTypes}</span>
             </button>
@@ -950,7 +984,7 @@ export const DashboardPage: React.FC = () => {
           <li className={`sidebar-item ${activeTab === 'pinjam' ? 'active' : ''}`}>
             <button
               onClick={() => {
-                setActiveTab('pinjam');
+                navigateTab('pinjam');
                 setPinjamActiveSubTab('aktif');
               }}
               title={isSidebarCollapsed ? 'Pinjam & Ambil' : undefined}
@@ -966,7 +1000,7 @@ export const DashboardPage: React.FC = () => {
           <li className={`sidebar-item ${activeTab === 'sejarah' ? 'active' : ''}`}>
             <button
               onClick={() => {
-                setActiveTab('sejarah');
+                navigateTab('sejarah');
                 const now = Date.now();
                 setLastViewedAuditLog(now);
                 localStorage.setItem(auditLogStorageKey, String(now));
@@ -991,7 +1025,7 @@ export const DashboardPage: React.FC = () => {
             </button>
           </li>
           <li className={`sidebar-item ${activeTab === 'notifikasi' ? 'active' : ''}`}>
-            <button onClick={() => setActiveTab('notifikasi')} title={isSidebarCollapsed ? 'Notifikasi' : undefined}>
+            <button onClick={() => navigateTab('notifikasi')} title={isSidebarCollapsed ? 'Notifikasi' : undefined}>
               {iconBell} <span className="sidebar-label">Notifikasi</span>
               {filteredNotifications.length > 0 && (
                 <span className="tab-badge" style={{ backgroundColor: 'var(--accent)', color: 'white' }}>
@@ -1002,13 +1036,13 @@ export const DashboardPage: React.FC = () => {
           </li>
           {(user.role === 'Ketua Bengkel' || user.role === 'PIC') && (
             <li className={`sidebar-item ${activeTab === 'ahli' ? 'active' : ''}`}>
-              <button onClick={() => setActiveTab('ahli')} title={isSidebarCollapsed ? 'Ahli Bengkel' : undefined}>
+              <button onClick={() => navigateTab('ahli')} title={isSidebarCollapsed ? 'Ahli Bengkel' : undefined}>
                 {iconUsers} <span className="sidebar-label">Ahli Bengkel</span>
               </button>
             </li>
           )}
           <li className={`sidebar-item ${activeTab === 'tetapan' ? 'active' : ''}`}>
-            <button onClick={() => setActiveTab('tetapan')} title={isSidebarCollapsed ? 'Tetapan' : undefined}>
+            <button onClick={() => navigateTab('tetapan')} title={isSidebarCollapsed ? 'Tetapan' : undefined}>
               {iconSettings} <span className="sidebar-label">Tetapan</span>
             </button>
           </li>
@@ -1053,7 +1087,15 @@ export const DashboardPage: React.FC = () => {
               <span className="user-role-badge">{user.role}</span>
             </div>
           </div>
-          <button id="logout-btn" onClick={logout} className="btn btn-secondary btn-logout" title="Keluar Sistem">
+          <button
+            id="logout-btn"
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              logout();
+            }}
+            className="btn btn-secondary btn-logout"
+            title="Keluar Sistem"
+          >
             {isSidebarCollapsed ? '🚪' : 'Keluar Sistem'}
           </button>
         </div>
@@ -1061,6 +1103,43 @@ export const DashboardPage: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="main-content">
+        {/* Mobile Topbar (Shown on tablets and phones) */}
+        <div className="mobile-topbar">
+          <button
+            type="button"
+            className="mobile-menu-btn"
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label="Buka Menu"
+            title="Buka Menu Navigasi"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          <div className="mobile-topbar-brand">
+            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <span className="mobile-topbar-title">KV Inventori</span>
+              <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user.workshop}
+              </span>
+            </div>
+            <span className="mobile-topbar-store">{user.selectedStore}</span>
+          </div>
+
+          <button
+            type="button"
+            className="mobile-avatar-btn"
+            onClick={() => navigateTab('tetapan')}
+            title={`Profil: ${user.name}`}
+          >
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user.name} />
+            ) : (
+              <span>{user.name.charAt(0).toUpperCase()}</span>
+            )}
+          </button>
+        </div>
         {/* Header */}
         <header className="dashboard-header">
           <div className="header-title-section">
@@ -1092,7 +1171,7 @@ export const DashboardPage: React.FC = () => {
         {activeTab === 'dashboard' && (
           <>
             {/* ── 1. BAR TINDAKAN PANTAS (QUICK ACTION BAR) ── */}
-            <div style={{
+            <div className="quick-action-bar" style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -1113,7 +1192,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div className="quick-action-buttons" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                 {/* [ ⚡ Pinjam / Ambil Pantas ] */}
                 <button
                   id="quick-borrow-btn"
@@ -1610,7 +1689,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
 
                   {/* 7 Dropdowns Penapis */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                  <div className="filters-group-responsive" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                     
                     {/* 1. Jenis */}
                     <select
@@ -1732,7 +1811,7 @@ export const DashboardPage: React.FC = () => {
 
                 {/* Right side: Action buttons */}
                 {(user.role === 'Ketua Bengkel' || user.role === 'PIC') && (
-                  <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                  <div className="inventory-actions-responsive" style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
                     <button
                       id="import-excel-btn"
                       onClick={() => setIsImportModalOpen(true)}
@@ -1894,6 +1973,9 @@ export const DashboardPage: React.FC = () => {
               </div>
             ) : (
               <div className="table-container">
+                <div className="table-scroll-hint">
+                  <span>👈</span> Leret ke kiri/kanan untuk melihat semua maklumat <span>👉</span>
+                </div>
                 <table className="custom-table">
                   <thead>
                     <tr>
@@ -2067,7 +2149,7 @@ export const DashboardPage: React.FC = () => {
         {activeTab === 'pinjam' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {/* ── 2 Sub-Tabs Navigation (Tab 1: Rekod Pinjaman Aktif [Utama/Default], Tab 2: Permohonan Menunggu Kelulusan) ── */}
-            <div style={{
+            <div className="loan-subtabs-responsive" style={{
               display: 'flex',
               gap: '0.6rem',
               borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
@@ -4966,6 +5048,80 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Mobile Bottom Navigation Bar (Phones & Small Tablets) */}
+      <nav className="mobile-bottom-nav" aria-label="Navigasi Mudah Alih">
+        <button
+          type="button"
+          className={`mobile-bottom-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => navigateTab('dashboard')}
+        >
+          <span className="bottom-icon">📊</span>
+          <span>Ringkasan</span>
+        </button>
+
+        <button
+          type="button"
+          className={`mobile-bottom-item ${activeTab === 'inventori' ? 'active' : ''}`}
+          onClick={() => navigateTab('inventori')}
+        >
+          <span className="bottom-icon">📦</span>
+          <span>Inventori</span>
+          <span className="mobile-bottom-badge" style={{ backgroundColor: 'var(--primary)' }}>
+            {totalItemTypes}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={`mobile-bottom-item ${activeTab === 'pinjam' ? 'active' : ''}`}
+          onClick={() => {
+            navigateTab('pinjam');
+            setPinjamActiveSubTab('aktif');
+          }}
+        >
+          <span className="bottom-icon">🔄</span>
+          <span>Pinjam</span>
+          {pendingApprovals.length > 0 && (user.role === 'Ketua Bengkel' || user.role === 'PIC') && (
+            <span className="mobile-bottom-badge">
+              {pendingApprovals.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          className={`mobile-bottom-item ${activeTab === 'sejarah' ? 'active' : ''}`}
+          onClick={() => {
+            navigateTab('sejarah');
+            const now = Date.now();
+            setLastViewedAuditLog(now);
+            localStorage.setItem(auditLogStorageKey, String(now));
+          }}
+        >
+          <span className="bottom-icon">📜</span>
+          <span>Sejarah</span>
+          {unreadAuditLogsCount > 0 && (
+            <span className="mobile-bottom-badge">
+              {unreadAuditLogsCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          className={`mobile-bottom-item ${isMobileMenuOpen || activeTab === 'notifikasi' || activeTab === 'ahli' || activeTab === 'tetapan' ? 'active' : ''}`}
+          onClick={() => setIsMobileMenuOpen(prev => !prev)}
+        >
+          <span className="bottom-icon">☰</span>
+          <span>Menu</span>
+          {filteredNotifications.length > 0 && (
+            <span className="mobile-bottom-badge" style={{ backgroundColor: 'var(--accent)' }}>
+              {filteredNotifications.length}
+            </span>
+          )}
+        </button>
+      </nav>
     </div>
   );
 };

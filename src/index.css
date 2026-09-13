@@ -995,13 +995,188 @@ h1, h2, h3, h4, h5 {
   gap: 1rem;
 }
 
-/* Responsive sidebar */
-@media (max-width: 768px) {
+/* Responsive mobile drawer & layout */
+.mobile-drawer-overlay {
+  display: none;
+}
+
+.mobile-topbar {
+  display: none;
+}
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+.mobile-drawer-close-btn {
+  display: none;
+}
+
+@media (max-width: 1024px) {
   .dashboard-wrapper {
     grid-template-columns: 1fr;
   }
+
+  /* Mobile Topbar */
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+    background: rgba(11, 15, 25, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--card-border);
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    gap: 0.75rem;
+  }
+
+  .mobile-menu-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    flex-shrink: 0;
+  }
+  .mobile-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary);
+  }
+  .mobile-menu-btn span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+  }
+
+  .mobile-topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow: hidden;
+    flex-grow: 1;
+  }
+  .mobile-topbar-title {
+    font-size: 1rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mobile-topbar-store {
+    font-size: 0.72rem;
+    background: rgba(6, 182, 212, 0.12);
+    color: #22d3ee;
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    padding: 0.15rem 0.5rem;
+    border-radius: 50px;
+    white-space: nowrap;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-avatar-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: 1.5px solid var(--card-border);
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .mobile-avatar-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Backdrop overlay */
+  .mobile-drawer-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 7, 18, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 140;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .mobile-drawer-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Sidebar transforms into off-canvas drawer */
   .sidebar {
-    display: none; /* In a full system we'd make a toggle mobile drawer, but here we keep dashboard layout grid-responsive */
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 290px !important;
+    max-width: 85vw;
+    z-index: 150;
+    background: #080c16;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+    padding: 1.5rem 1.25rem !important;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 15px 0 50px rgba(0, 0, 0, 0.8);
+  }
+
+  .sidebar .sidebar-title,
+  .sidebar .sidebar-label,
+  .sidebar .user-info {
+    display: flex !important;
+  }
+
+  .sidebar-toggle-btn {
+    display: none !important;
+  }
+
+  .mobile-drawer-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--card-border);
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+  }
+  .mobile-drawer-close-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
   }
 }
 
@@ -1208,3 +1383,372 @@ h1, h2, h3, h4, h5 {
   border-color: #3b82f6 !important;
   box-shadow: 0 0 0 1px #3b82f6 !important;
 }
+
+/* ===================================================================
+   RESPONSIVE DESIGN (PHONE & TABLET ADAPTATION)
+   =================================================================== */
+
+/* Tablet & Mobile (<= 1024px) */
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 1.5rem 1.25rem;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .dashboard-row {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Mobile & Small Tablet (<= 768px) */
+@media (max-width: 768px) {
+  /* Prevent horizontal scroll on body */
+  html, body {
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  /* Safe touch targets & iOS zoom prevention */
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents auto zoom in iOS Safari */
+  }
+
+  .btn, .input-field, .select-field {
+    min-height: 42px;
+  }
+
+  /* Main content padding with bottom nav offset */
+  .main-content {
+    padding: 1rem 0.85rem calc(5rem + env(safe-area-inset-bottom, 0px)) 0.85rem;
+    gap: 1.15rem;
+  }
+
+  /* Glass panel padding override */
+  .glass-panel {
+    padding: 1rem 0.85rem !important;
+    border-radius: var(--radius-md);
+  }
+
+  .glass-card {
+    padding: 1rem 0.85rem;
+  }
+
+  /* Header adjustments */
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding-bottom: 0.85rem;
+  }
+
+  .header-title-section h2 {
+    font-size: 1.35rem;
+  }
+
+  .header-title-section p {
+    font-size: 0.82rem;
+  }
+
+  .store-indicator {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.82rem;
+  }
+
+  /* Mobile Bottom Navigation Bar */
+  .mobile-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(11, 15, 25, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 120;
+    padding: 0.4rem 0.2rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .mobile-bottom-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.25rem 0.15rem;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+
+  .mobile-bottom-item.active {
+    color: #818cf8;
+    font-weight: 700;
+  }
+
+  .mobile-bottom-item .bottom-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+  }
+
+  .mobile-bottom-badge {
+    position: absolute;
+    top: 1px;
+    right: calc(50% - 15px);
+    background: #ef4444;
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.08rem 0.35rem;
+    border-radius: 999px;
+    min-width: 14px;
+    text-align: center;
+    line-height: 1;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+  }
+
+  /* Quick Action Bar */
+  .quick-action-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    padding: 0.85rem 1rem !important;
+  }
+  .quick-action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .quick-action-buttons .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Inventory Controls on Phone/Tablet */
+  .inventory-controls {
+    gap: 0.75rem !important;
+  }
+  .inventory-controls > div {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.65rem !important;
+  }
+  .search-wrapper {
+    max-width: 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Filters wrapping */
+  .filters-group-responsive {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.45rem !important;
+    width: 100% !important;
+  }
+  .filters-group-responsive select {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: 38px !important;
+    font-size: 0.78rem !important;
+  }
+
+  /* Action buttons (Tambah, Import, Eksport, Pindahan) */
+  .inventory-actions-responsive {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+  .inventory-actions-responsive button {
+    flex: 1 1 calc(50% - 0.25rem) !important;
+    justify-content: center !important;
+    text-align: center !important;
+    min-height: 40px !important;
+    font-size: 0.78rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* Table styling on mobile */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-sm);
+    margin: 0 -0.25rem;
+  }
+  .custom-table {
+    min-width: 720px;
+    font-size: 0.82rem;
+  }
+  .custom-table th, 
+  .custom-table td {
+    padding: 0.65rem 0.6rem;
+  }
+  .table-scroll-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    padding: 0.35rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    margin-bottom: 0.4rem;
+  }
+
+  /* Modals on Phone */
+  .modal-overlay {
+    padding: 0.5rem;
+    align-items: flex-end;
+  }
+  .modal-content {
+    max-height: 90vh;
+    padding: 1.25rem 1rem;
+    border-radius: 16px 16px 0 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .modal-footer {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+  .modal-footer .btn {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  /* Import Excel Modal on Phone */
+  .import-modal-panel {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+  }
+  .import-dropzone {
+    padding: 1.75rem 1rem;
+    margin: 1rem 0.75rem;
+  }
+  .import-dropzone-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .import-table-wrapper {
+    padding: 0 0.5rem;
+  }
+  .import-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+  .import-footer-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .import-footer-actions .btn {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  /* Loan subtabs */
+  .loan-subtabs-responsive {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .loan-subtabs-responsive button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Auth & Store Select */
+  .auth-wrapper {
+    padding: 1rem 0.75rem;
+  }
+  .auth-card {
+    padding: 1.5rem 1.15rem;
+    gap: 1.25rem;
+  }
+  .auth-header h1 {
+    font-size: 1.55rem;
+  }
+  .store-wrapper {
+    padding: 1.5rem 0.85rem;
+  }
+  .store-container {
+    gap: 1.5rem;
+  }
+  .store-header h2 {
+    font-size: 1.55rem;
+  }
+  .store-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+}
+
+/* Extra Compact Phone Screens (<= 640px) */
+@media (max-width: 640px) {
+  /* 2-column compact stat cards */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.55rem;
+  }
+  .stat-card {
+    padding: 0.75rem 0.65rem;
+    border-radius: var(--radius-sm);
+  }
+  .stat-header {
+    margin-bottom: 0.35rem;
+    font-size: 0.72rem;
+  }
+  .stat-icon-wrapper {
+    width: 26px;
+    height: 26px;
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+  .stat-value {
+    font-size: 1.35rem;
+  }
+  .stat-subtext {
+    font-size: 0.68rem;
+    margin-top: 0.2rem;
+  }
+
+  /* Single column for filters on very small phones if needed */
+  .filters-group-responsive {
+    grid-template-columns: 1fr !important;
+  }
+  .inventory-actions-responsive button {
+    flex: 1 1 100% !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .table-scroll-hint {
+    display: none;
+  }
+}
+
