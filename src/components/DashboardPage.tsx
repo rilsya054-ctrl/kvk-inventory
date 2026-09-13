@@ -1141,11 +1141,14 @@ export const DashboardPage: React.FC = () => {
           <div className="mobile-topbar-brand">
             <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               <span className="mobile-topbar-title">KV Inventori</span>
-              <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user.workshop}
+              <span 
+                style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                title={user.workshop}
+              >
+                {user.workshop === 'Teknologi Penyejukan dan Penyamanan Udara' ? 'Bengkel TPPU (Penyamanan Udara)' : user.workshop}
               </span>
             </div>
-            <span className="mobile-topbar-store">{user.selectedStore}</span>
+            <span className="mobile-topbar-store" title={user.selectedStore}>{user.selectedStore}</span>
           </div>
 
           <button
@@ -1177,7 +1180,11 @@ export const DashboardPage: React.FC = () => {
                 ? 'Tetapan Sistem & Profil'
                 : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
             </h2>
-            <p>{user.workshop} / {user.selectedStore}</p>
+            <p className="header-subtitle">
+              <span className="header-workshop-name">{user.workshop}</span>
+              <span className="header-sep"> / </span>
+              <span className="header-store-name">{user.selectedStore}</span>
+            </p>
           </div>
           <div className="store-indicator">
             <div className="store-indicator-dot"></div>
