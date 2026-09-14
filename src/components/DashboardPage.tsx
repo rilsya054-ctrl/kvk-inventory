@@ -4,7 +4,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useInventory } from '../context/InventoryContext';
 import type { InventoryItem, UserAccount } from '../types';
-import { STOR_INDUK } from '../types';
+import { STOR_INDUK, WORKSHOP_STORES } from '../types';
 import { ExcelImportModal } from './ExcelImportModal';
 import TransferModal from './TransferModal';
 import { WorkshopCategoryManager, getWorkshopCategories } from './WorkshopCategoryManager';
@@ -386,6 +386,19 @@ export const DashboardPage: React.FC = () => {
 
   // STOR_INDUK: aggregate all sub-stores for this workshop (Ketua Bengkel only)
   const isStorInduk = user.selectedStore === STOR_INDUK;
+
+  // Helper to format concise store badge for mobile topbar and quick switcher
+  const formatStoreBadgeText = (storeName: string) => {
+    if (!storeName) return '';
+    if (storeName === STOR_INDUK) return '🌐 Semua Stor';
+    if (storeName.includes('PPU 1')) return '❄️ PPU 1';
+    if (storeName.includes('PPU 2')) return '⚙️ PPU 2';
+    if (storeName.includes('PPU 3')) return '📏 PPU 3';
+    if (storeName.includes('PPU 4')) return '🧪 PPU 4';
+    if (storeName.includes('PPU 5A')) return '🧭 PPU 5A';
+    if (storeName.includes('PPU 5B')) return '🛠️ PPU 5B';
+    return storeName.replace('Stor Bengkel ', '').replace('Stor Makmal ', '').replace('Stor ', '');
+  };
 
   // Filter audit logs for the current store/workshop
   const storeAuditLogs = auditLogs.filter(
@@ -1148,7 +1161,14 @@ export const DashboardPage: React.FC = () => {
                 {user.workshop === 'Teknologi Penyejukan dan Penyamanan Udara' ? 'Bengkel TPPU (Penyamanan Udara)' : user.workshop}
               </span>
             </div>
-            <span className="mobile-topbar-store" title={user.selectedStore}>{user.selectedStore}</span>
+            <button
+              type="button"
+              className="mobile-topbar-store"
+              onClick={() => selectStore('')}
+              title={`Stor Aktif: ${user.selectedStore} (Ketik untuk tukar stor)`}
+            >
+              {formatStoreBadgeText(user.selectedStore)}
+            </button>
           </div>
 
           <button
@@ -1175,7 +1195,7 @@ export const DashboardPage: React.FC = () => {
                 : activeTab === 'pinjam'
                 ? 'Pinjaman & Pengambilan'
                 : activeTab === 'ahli'
-                ? `Pengurusan Ahli Bengkel - ${user.workshop}`
+                ? (user.workshop === 'Teknologi Penyejukan dan Penyamanan Udara' ? 'Pengurusan Ahli TPPU' : `Pengurusan Ahli Bengkel - ${user.workshop}`)
                 : activeTab === 'tetapan'
                 ? 'Tetapan Sistem & Profil'
                 : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
@@ -1194,6 +1214,38 @@ export const DashboardPage: React.FC = () => {
             </button>
           </div>
         </header>
+
+        {/* ── Quick Store Switcher Bar for Phone & Tablet ── */}
+        <div className="store-quick-switcher">
+          <div className="store-switcher-label">
+            <span>Pilih Stor:</span>
+          </div>
+          <div className="store-switcher-scroll">
+            {(WORKSHOP_STORES[user.workshop] || []).map((s) => {
+              const isActive = s === user.selectedStore;
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => selectStore(s)}
+                  className={`store-switcher-chip ${isActive ? 'active' : ''}`}
+                  title={s}
+                >
+                  <span className="store-chip-dot"></span>
+                  <span className="store-chip-name">{formatStoreBadgeText(s)}</span>
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => selectStore(STOR_INDUK)}
+              className={`store-switcher-chip ${user.selectedStore === STOR_INDUK ? 'active' : ''}`}
+              title="Stor Induk (Semua Stor)"
+            >
+              <span className="store-chip-name">🌐 Semua Stor</span>
+            </button>
+          </div>
+        </div>
 
         {/* Tab contents */}
         {activeTab === 'dashboard' && (
@@ -4407,7 +4459,7 @@ export const DashboardPage: React.FC = () => {
                   <div>
                     <h2 className="modal-title" style={{ margin: 0, fontSize: '1.25rem' }}>Tambah Barang Baru</h2>
                     <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                      {user.selectedStore} · {user.workshop}
+                      {user.selectedStore} · {user.workshop === 'Teknologi Penyejukan dan Penyamanan Udara' ? 'TPPU' : user.workshop}
                     </p>
                   </div>
                 </div>
@@ -4712,7 +4764,7 @@ export const DashboardPage: React.FC = () => {
                   <div>
                     <h2 className="modal-title" style={{ margin: 0, fontSize: '1.25rem' }}>Kemaskini Barangan</h2>
                     <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                      {user.selectedStore} · {user.workshop}
+                      {user.selectedStore} · {user.workshop === 'Teknologi Penyejukan dan Penyamanan Udara' ? 'TPPU' : user.workshop}
                     </p>
                   </div>
                 </div>

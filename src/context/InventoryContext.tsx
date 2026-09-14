@@ -49,11 +49,37 @@ const initialMockItems: InventoryItem[] = [
   { id: 'pa-4', name: 'Kalkulator Saintifik 570MS', brand: 'Casio', sku: 'CAS-570MS', quantity: 30, totalQuantity: 30, store: 'Stor Makmal Perakaunan 2', workshop: 'Perakaunan', location: 'Kabinet C', kategori: 'peralatan', unit: 'unit', stokMinima: 5 },
   { id: 'pa-5', name: 'Kertas A4 Double A 80gsm', brand: 'Double A', sku: 'DBP-PA-T4', quantity: 50, totalQuantity: 50, store: 'Stor Makmal Perakaunan 2', workshop: 'Perakaunan', location: 'Rak D-1', kategori: 'habis_pakai', unit: 'kotak', stokMinima: 10 },
 
-  // PPU
+  // PPU (Teknologi Penyejukan dan Penyamanan Udara)
+  // Stor 1 - Diagnostik & Pengesan
   { id: 'ppu-1', name: 'Leak Detector Refrigerant Gas', brand: 'Inficon', sku: 'INF-LD-01', quantity: 4, totalQuantity: 4, store: 'Stor Bengkel PPU 1', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Rak Logam 1', kategori: 'peralatan', unit: 'unit', stokMinima: 2 },
-  { id: 'ppu-2', name: 'Kompresor 1.5 HP R32', brand: 'Panasonic', sku: 'PAN-COMP-1.5', quantity: 6, totalQuantity: 6, store: 'Stor Bengkel PPU 2', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Rak Logam 2', kategori: 'peralatan', unit: 'unit', stokMinima: 2 },
+  { id: 'ppu-1b', name: 'Digital Anemometer & Airflow Meter', brand: 'Testo', sku: 'TST-ANEM-417', quantity: 3, totalQuantity: 3, store: 'Stor Bengkel PPU 1', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Almari Instrumen A', kategori: 'peralatan', unit: 'unit', stokMinima: 1 },
+  { id: 'ppu-1c', name: 'Termometer Inframerah Laser HVAC', brand: 'Fluke', sku: 'FLK-IR-62', quantity: 5, totalQuantity: 5, store: 'Stor Bengkel PPU 1', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Kabinet Diagnostik', kategori: 'peralatan', unit: 'unit', stokMinima: 2 },
+
+  // Stor 2 - Pemampat & Elektrikal
+  { id: 'ppu-2', name: 'Kompresor 1.5 HP R32 Rotary', brand: 'Panasonic', sku: 'PAN-COMP-1.5', quantity: 6, totalQuantity: 6, store: 'Stor Bengkel PPU 2', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Rak Logam 2', kategori: 'peralatan', unit: 'unit', stokMinima: 2 },
+  { id: 'ppu-2b', name: 'Motor Kipas Penghembus Indoor AC', brand: 'Daikin', sku: 'DAI-BM-01', quantity: 4, totalQuantity: 4, store: 'Stor Bengkel PPU 2', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Rak Komponen 2', kategori: 'peralatan', unit: 'unit', stokMinima: 1 },
+  { id: 'ppu-2c', name: 'Kapasitor Pemula Dual Run 35+5 uF', brand: 'Epcos', sku: 'EPC-CAP-355', quantity: 24, totalQuantity: 24, store: 'Stor Bengkel PPU 2', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Kotak Komponen E-1', kategori: 'habis_pakai', unit: 'unit', stokMinima: 5 },
+
+  // Stor 3 - Tiub Kuprum & Paip
   { id: 'ppu-3', name: 'Tiub Kuprum 1/4" (30m Roll)', brand: 'Kembla', sku: 'KEM-TUBE-14', quantity: 10, totalQuantity: 10, store: 'Stor Bengkel PPU 3', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Rak Gantung', kategori: 'habis_pakai', unit: 'roll', stokMinima: 3 },
+  { id: 'ppu-3b', name: 'Tiub Kuprum 3/8" (30m Roll)', brand: 'Kembla', sku: 'KEM-TUBE-38', quantity: 8, totalQuantity: 8, store: 'Stor Bengkel PPU 3', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Rak Gantung', kategori: 'habis_pakai', unit: 'roll', stokMinima: 2 },
+  { id: 'ppu-3c', name: 'Penebat Paip Getah Armaflex 3/8"', brand: 'Armacell', sku: 'ARM-INS-38', quantity: 25, totalQuantity: 25, store: 'Stor Bengkel PPU 3', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Rak Paip B', kategori: 'habis_pakai', unit: 'batang', stokMinima: 6 },
+
+  // Stor 4 - Gas Pendingin & Bahan Kimia
   { id: 'ppu-4', name: 'Tong Gas R32 (9.5kg)', brand: 'Daikin', sku: 'DAI-GAS-R32', quantity: 3, totalQuantity: 3, store: 'Stor Bengkel PPU 4', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Kawasan Bahan Kimia', kategori: 'habis_pakai', unit: 'tong', stokMinima: 1 },
+  { id: 'ppu-4b', name: 'Tong Gas R410A (11.3kg)', brand: 'Honeywell', sku: 'HON-GAS-410A', quantity: 2, totalQuantity: 2, store: 'Stor Bengkel PPU 4', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Kawasan Bahan Kimia', kategori: 'habis_pakai', unit: 'tong', stokMinima: 1 },
+  { id: 'ppu-4c', name: 'Minyak Pemampat Sintetik POE 1L', brand: 'Emkarate', sku: 'EMK-POE-68', quantity: 8, totalQuantity: 8, store: 'Stor Bengkel PPU 4', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Kabinet Kimia 3', kategori: 'habis_pakai', unit: 'botol', stokMinima: 2 },
+
+  // Stor 5A - Tolok Manifold & Vakum
+  { id: 'ppu-5a1', name: 'Tolok Manifold Digital 4-Injap', brand: 'Fieldpiece', sku: 'FLD-SM-480', quantity: 3, totalQuantity: 3, store: 'Stor Bengkel PPU 5A', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Almari Khas 5A', kategori: 'peralatan', unit: 'set', stokMinima: 1 },
+  { id: 'ppu-5a2', name: 'Pam Vakum Dua Peringkat 4 CFM', brand: 'Value', sku: 'VAL-VAC-4CFM', quantity: 4, totalQuantity: 4, store: 'Stor Bengkel PPU 5A', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Rak Mesin 5A', kategori: 'peralatan', unit: 'unit', stokMinima: 1 },
+  { id: 'ppu-5a3', name: 'Tolok Micron Vakum Digital', brand: 'Yellow Jacket', sku: 'YJ-MIC-69086', quantity: 2, totalQuantity: 2, store: 'Stor Bengkel PPU 5A', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Kabinet Precision', kategori: 'peralatan', unit: 'unit', stokMinima: 1 },
+
+  // Stor 5B - Flaring & Obor Kimpalan
+  { id: 'ppu-5b1', name: 'Set Alat Flaring & Swaging Eksentrik', brand: 'Ridgid', sku: 'RDG-FLR-345', quantity: 5, totalQuantity: 5, store: 'Stor Bengkel PPU 5B', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Troli Perkakas 5B', kategori: 'peralatan', unit: 'set', stokMinima: 2 },
+  { id: 'ppu-5b2', name: 'Pemotong Tiub Kuprum Tugas Berat', brand: 'Imperial', sku: 'IMP-CUT-118', quantity: 8, totalQuantity: 8, store: 'Stor Bengkel PPU 5B', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Kotak Alatan B', kategori: 'peralatan', unit: 'unit', stokMinima: 2 },
+  { id: 'ppu-5b3', name: 'Rod Kimpalan Perak Brazing 5% Ag', brand: 'Harris', sku: 'HRS-BRZ-5', quantity: 40, totalQuantity: 40, store: 'Stor Bengkel PPU 5B', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Rak Bahan Kimpalan', kategori: 'habis_pakai', unit: 'batang', stokMinima: 10 },
+  { id: 'ppu-5b4', name: 'Set Obor Pematerian Gas MAPP Portable', brand: 'Bernzomatic', sku: 'BNZ-TS-8000', quantity: 3, totalQuantity: 3, store: 'Stor Bengkel PPU 5B', workshop: 'Teknologi Penyejukan dan Penyamanan Udara', location: 'Kawasan Keselamatan Kimpalan', kategori: 'peralatan', unit: 'set', stokMinima: 1 },
 
   // Automotif
   { id: 'auto-1', name: 'Enjin Toyota 1NZ-FE (Cut Section)', brand: 'Toyota', sku: 'TOY-1NZ-CUT', quantity: 2, totalQuantity: 2, store: 'Stor Bengkel Automotif 1', workshop: 'Teknologi Automotif', location: 'Tengah Bengkel', kategori: 'peralatan', unit: 'unit', stokMinima: 1 },
@@ -114,7 +140,24 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [items, setItems] = useState<InventoryItem[]>(() => {
     const saved = localStorage.getItem('kv_inventory_items');
-    return saved ? JSON.parse(saved) : initialMockItems;
+    if (saved) {
+      try {
+        const parsed: InventoryItem[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingIds = new Set(parsed.map(i => i.id));
+          const missingPpu = initialMockItems.filter(
+            item => item.workshop === 'Teknologi Penyejukan dan Penyamanan Udara' && !existingIds.has(item.id)
+          );
+          if (missingPpu.length > 0) {
+            return [...parsed, ...missingPpu];
+          }
+          return parsed;
+        }
+      } catch {
+        // fallback
+      }
+    }
+    return initialMockItems;
   });
 
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
