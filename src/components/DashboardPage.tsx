@@ -4,7 +4,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useInventory } from '../context/InventoryContext';
 import type { InventoryItem, UserAccount } from '../types';
-import { STOR_INDUK, WORKSHOP_STORES } from '../types';
+import { STOR_INDUK } from '../types';
 import { ExcelImportModal } from './ExcelImportModal';
 import TransferModal from './TransferModal';
 import { WorkshopCategoryManager, getWorkshopCategories } from './WorkshopCategoryManager';
@@ -190,23 +190,6 @@ export const DashboardPage: React.FC = () => {
     }
   });
 
-  // Mobile Drawer State
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Close mobile drawer on Esc key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsMobileMenuOpen(false);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const navigateTab = (tab: TabType) => {
-    setActiveTab(tab);
-    setIsMobileMenuOpen(false);
-  };
-
   const toggleSidebar = () => {
     setIsSidebarCollapsed(prev => {
       const next = !prev;
@@ -218,6 +201,9 @@ export const DashboardPage: React.FC = () => {
       return next;
     });
   };
+
+  // Mobile Slide Menu Drawer State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Member Management States
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
@@ -236,27 +222,6 @@ export const DashboardPage: React.FC = () => {
   const [filterKedudukan, setFilterKedudukan] = useState('Semua Kedudukan');
   const [filterStatus, setFilterStatus] = useState('Semua Status');
   const [filterAbjad, setFilterAbjad] = useState('Semua Abjad');
-
-  // View mode for inventory items: 'card' (default on mobile) | 'table'
-  const [itemViewMode, setItemViewMode] = useState<'card' | 'table'>(() => {
-    try {
-      if (typeof window !== 'undefined' && window.innerWidth <= 768) return 'card';
-      return (localStorage.getItem('kv_item_view_mode') as 'card' | 'table') || 'card';
-    } catch {
-      return 'card';
-    }
-  });
-
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-
-  const handleToggleViewMode = (mode: 'card' | 'table') => {
-    setItemViewMode(mode);
-    try {
-      localStorage.setItem('kv_item_view_mode', mode);
-    } catch {
-      // ignore
-    }
-  };
 
   // Audit Log filter tab
   type AuditFilterType = 'Semua' | 'TAMBAH' | 'KEMASKINI' | 'PADAM' | 'PINDAH';
@@ -386,19 +351,6 @@ export const DashboardPage: React.FC = () => {
 
   // STOR_INDUK: aggregate all sub-stores for this workshop (Ketua Bengkel only)
   const isStorInduk = user.selectedStore === STOR_INDUK;
-
-  // Helper to format concise store badge for mobile topbar and quick switcher
-  const formatStoreBadgeText = (storeName: string) => {
-    if (!storeName) return '';
-    if (storeName === STOR_INDUK) return '🌐 Semua Stor';
-    if (storeName.includes('PPU 1')) return '❄️ PPU 1';
-    if (storeName.includes('PPU 2')) return '⚙️ PPU 2';
-    if (storeName.includes('PPU 3')) return '📏 PPU 3';
-    if (storeName.includes('PPU 4')) return '🧪 PPU 4';
-    if (storeName.includes('PPU 5A')) return '🧭 PPU 5A';
-    if (storeName.includes('PPU 5B')) return '🛠️ PPU 5B';
-    return storeName.replace('Stor Bengkel ', '').replace('Stor Makmal ', '').replace('Stor ', '');
-  };
 
   // Filter audit logs for the current store/workshop
   const storeAuditLogs = auditLogs.filter(
@@ -952,14 +904,16 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="dashboard-wrapper">
-      {/* Mobile Drawer Backdrop Overlay */}
-      <div
-        className={`mobile-drawer-overlay ${isMobileMenuOpen ? 'active' : ''}`}
-        onClick={() => setIsMobileMenuOpen(false)}
-        aria-hidden="true"
-      />
+      {/* Mobile Backdrop Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="mobile-sidebar-backdrop"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
-      {/* Sidebar (Desktop Sticky & Mobile Slide-Over Drawer) */}
+      {/* Sidebar */}
       <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-brand">
           <div className="sidebar-brand-left">
@@ -991,10 +945,9 @@ export const DashboardPage: React.FC = () => {
           >
             {isSidebarCollapsed ? '❯' : '❮'}
           </button>
-          {/* Mobile Drawer Close Button */}
           <button
             type="button"
-            className="mobile-drawer-close-btn"
+            className="mobile-sidebar-close-btn"
             onClick={() => setIsMobileMenuOpen(false)}
             title="Tutup Menu"
             aria-label="Tutup Menu"
@@ -1005,12 +958,12 @@ export const DashboardPage: React.FC = () => {
 
         <ul className="sidebar-menu">
           <li className={`sidebar-item ${activeTab === 'dashboard' ? 'active' : ''}`}>
-            <button onClick={() => navigateTab('dashboard')} title={isSidebarCollapsed ? 'Dashboard' : undefined}>
+            <button onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }} title={isSidebarCollapsed ? 'Dashboard' : undefined}>
               {iconHome} <span className="sidebar-label">Dashboard</span>
             </button>
           </li>
           <li className={`sidebar-item ${activeTab === 'inventori' ? 'active' : ''}`}>
-            <button onClick={() => navigateTab('inventori')} title={isSidebarCollapsed ? 'Inventori' : undefined}>
+            <button onClick={() => { setActiveTab('inventori'); setIsMobileMenuOpen(false); }} title={isSidebarCollapsed ? 'Inventori' : undefined}>
               {iconBox} <span className="sidebar-label">Inventori</span>
               <span className="tab-badge">{totalItemTypes}</span>
             </button>
@@ -1018,8 +971,9 @@ export const DashboardPage: React.FC = () => {
           <li className={`sidebar-item ${activeTab === 'pinjam' ? 'active' : ''}`}>
             <button
               onClick={() => {
-                navigateTab('pinjam');
+                setActiveTab('pinjam');
                 setPinjamActiveSubTab('aktif');
+                setIsMobileMenuOpen(false);
               }}
               title={isSidebarCollapsed ? 'Pinjam & Ambil' : undefined}
             >
@@ -1034,7 +988,8 @@ export const DashboardPage: React.FC = () => {
           <li className={`sidebar-item ${activeTab === 'sejarah' ? 'active' : ''}`}>
             <button
               onClick={() => {
-                navigateTab('sejarah');
+                setActiveTab('sejarah');
+                setIsMobileMenuOpen(false);
                 const now = Date.now();
                 setLastViewedAuditLog(now);
                 localStorage.setItem(auditLogStorageKey, String(now));
@@ -1059,7 +1014,7 @@ export const DashboardPage: React.FC = () => {
             </button>
           </li>
           <li className={`sidebar-item ${activeTab === 'notifikasi' ? 'active' : ''}`}>
-            <button onClick={() => navigateTab('notifikasi')} title={isSidebarCollapsed ? 'Notifikasi' : undefined}>
+            <button onClick={() => { setActiveTab('notifikasi'); setIsMobileMenuOpen(false); }} title={isSidebarCollapsed ? 'Notifikasi' : undefined}>
               {iconBell} <span className="sidebar-label">Notifikasi</span>
               {filteredNotifications.length > 0 && (
                 <span className="tab-badge" style={{ backgroundColor: 'var(--accent)', color: 'white' }}>
@@ -1070,13 +1025,13 @@ export const DashboardPage: React.FC = () => {
           </li>
           {(user.role === 'Ketua Bengkel' || user.role === 'PIC') && (
             <li className={`sidebar-item ${activeTab === 'ahli' ? 'active' : ''}`}>
-              <button onClick={() => navigateTab('ahli')} title={isSidebarCollapsed ? 'Ahli Bengkel' : undefined}>
+              <button onClick={() => { setActiveTab('ahli'); setIsMobileMenuOpen(false); }} title={isSidebarCollapsed ? 'Ahli Bengkel' : undefined}>
                 {iconUsers} <span className="sidebar-label">Ahli Bengkel</span>
               </button>
             </li>
           )}
           <li className={`sidebar-item ${activeTab === 'tetapan' ? 'active' : ''}`}>
-            <button onClick={() => navigateTab('tetapan')} title={isSidebarCollapsed ? 'Tetapan' : undefined}>
+            <button onClick={() => { setActiveTab('tetapan'); setIsMobileMenuOpen(false); }} title={isSidebarCollapsed ? 'Tetapan' : undefined}>
               {iconSettings} <span className="sidebar-label">Tetapan</span>
             </button>
           </li>
@@ -1121,15 +1076,7 @@ export const DashboardPage: React.FC = () => {
               <span className="user-role-badge">{user.role}</span>
             </div>
           </div>
-          <button
-            id="logout-btn"
-            onClick={() => {
-              setIsMobileMenuOpen(false);
-              logout();
-            }}
-            className="btn btn-secondary btn-logout"
-            title="Keluar Sistem"
-          >
+          <button id="logout-btn" onClick={logout} className="btn btn-secondary btn-logout" title="Keluar Sistem">
             {isSidebarCollapsed ? '🚪' : 'Keluar Sistem'}
           </button>
         </div>
@@ -1137,74 +1084,36 @@ export const DashboardPage: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="main-content">
-        {/* Mobile Topbar (Shown on tablets and phones) */}
-        <div className="mobile-topbar">
-          <button
-            type="button"
-            className="mobile-menu-btn"
-            onClick={() => setIsMobileMenuOpen(true)}
-            aria-label="Buka Menu"
-            title="Buka Menu Navigasi"
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-
-          <div className="mobile-topbar-brand">
-            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-              <span className="mobile-topbar-title">KV Inventori</span>
-              <span 
-                style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
-                title={user.workshop}
-              >
-                {user.workshop === 'Teknologi Penyejukan dan Penyamanan Udara' ? 'Bengkel TPPU (Penyamanan Udara)' : user.workshop}
-              </span>
-            </div>
-            <button
-              type="button"
-              className="mobile-topbar-store"
-              onClick={() => selectStore('')}
-              title={`Stor Aktif: ${user.selectedStore} (Ketik untuk tukar stor)`}
-            >
-              {formatStoreBadgeText(user.selectedStore)}
-            </button>
-          </div>
-
-          <button
-            type="button"
-            className="mobile-avatar-btn"
-            onClick={() => navigateTab('tetapan')}
-            title={`Profil: ${user.name}`}
-          >
-            {user.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user.name} />
-            ) : (
-              <span>{user.name.charAt(0).toUpperCase()}</span>
-            )}
-          </button>
-        </div>
         {/* Header */}
         <header className="dashboard-header">
-          <div className="header-title-section">
-            <h2>
-              {activeTab === 'dashboard'
-                ? 'Ringkasan Stor'
-                : activeTab === 'sejarah'
-                ? 'Sejarah Transaksi'
-                : activeTab === 'pinjam'
-                ? 'Pinjaman & Pengambilan'
-                : activeTab === 'ahli'
-                ? (user.workshop === 'Teknologi Penyejukan dan Penyamanan Udara' ? 'Pengurusan Ahli TPPU' : `Pengurusan Ahli Bengkel - ${user.workshop}`)
-                : activeTab === 'tetapan'
-                ? 'Tetapan Sistem & Profil'
-                : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-            </h2>
-            <p className="header-subtitle">
-              <span className="header-workshop-name">{user.workshop}</span>
-              <span className="header-sep"> / </span>
-              <span className="header-store-name">{user.selectedStore}</span>
-            </p>
+          <div className="dashboard-header-left">
+            <button
+              type="button"
+              className="mobile-hamburger-btn"
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Buka Menu"
+              title="Menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="header-title-section">
+              <h2>
+                {activeTab === 'dashboard'
+                  ? 'Ringkasan Stor'
+                  : activeTab === 'sejarah'
+                  ? 'Sejarah Transaksi'
+                  : activeTab === 'pinjam'
+                  ? 'Pinjaman & Pengambilan'
+                  : activeTab === 'ahli'
+                  ? `Pengurusan Ahli Bengkel - ${user.workshop}`
+                  : activeTab === 'tetapan'
+                  ? 'Tetapan Sistem & Profil'
+                  : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+              </h2>
+              <p>{user.workshop} / {user.selectedStore}</p>
+            </div>
           </div>
           <div className="store-indicator">
             <div className="store-indicator-dot"></div>
@@ -1215,43 +1124,11 @@ export const DashboardPage: React.FC = () => {
           </div>
         </header>
 
-        {/* ── Quick Store Switcher Bar for Phone & Tablet ── */}
-        <div className="store-quick-switcher">
-          <div className="store-switcher-label">
-            <span>Pilih Stor:</span>
-          </div>
-          <div className="store-switcher-scroll">
-            {(WORKSHOP_STORES[user.workshop] || []).map((s) => {
-              const isActive = s === user.selectedStore;
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => selectStore(s)}
-                  className={`store-switcher-chip ${isActive ? 'active' : ''}`}
-                  title={s}
-                >
-                  <span className="store-chip-dot"></span>
-                  <span className="store-chip-name">{formatStoreBadgeText(s)}</span>
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() => selectStore(STOR_INDUK)}
-              className={`store-switcher-chip ${user.selectedStore === STOR_INDUK ? 'active' : ''}`}
-              title="Stor Induk (Semua Stor)"
-            >
-              <span className="store-chip-name">🌐 Semua Stor</span>
-            </button>
-          </div>
-        </div>
-
         {/* Tab contents */}
         {activeTab === 'dashboard' && (
           <>
             {/* ── 1. BAR TINDAKAN PANTAS (QUICK ACTION BAR) ── */}
-            <div className="quick-action-bar" style={{
+            <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -1272,7 +1149,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="quick-action-buttons" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                 {/* [ ⚡ Pinjam / Ambil Pantas ] */}
                 <button
                   id="quick-borrow-btn"
@@ -1751,88 +1628,147 @@ export const DashboardPage: React.FC = () => {
 
         {activeTab === 'inventori' && (
           <div className="glass-panel" style={{ padding: '2rem' }}>
-            <div className="inventory-controls" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.25rem' }}>
-              
-              {/* Row 1: Search Bar + View Mode Toggle + Advanced Filter Toggle */}
+            <div className="inventory-controls" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', width: '100%' }}>
+                
+                {/* Left side: Search Wrapper & Horizontal Filters */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexGrow: 1, flexWrap: 'wrap' }}>
-                  
-                  {/* Search Input with Clear Button */}
-                  <div className="search-wrapper" style={{ minWidth: '220px', maxWidth: '340px', flexGrow: 1, position: 'relative' }}>
-                    <span className="search-icon" style={{ fontSize: '0.95rem' }}>🔍</span>
+                  <div className="search-wrapper" style={{ minWidth: '200px', maxWidth: '280px', flexGrow: 1 }}>
+                    <span className="search-icon" style={{ fontSize: '0.85rem' }}>🔍</span>
                     <input
                       type="text"
-                      placeholder="Cari alatan, kod SKU, lokasi..."
+                      placeholder="Cari barang..."
                       className="input-field search-input"
-                      style={{ fontSize: '0.88rem', paddingLeft: '2.4rem', paddingRight: searchTerm ? '2.2rem' : '1rem', minHeight: '42px' }}
+                      style={{ fontSize: '0.75rem', paddingLeft: '2.2rem', paddingTop: '0.4rem', paddingBottom: '0.4rem', height: 'auto' }}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    {searchTerm && (
-                      <button
-                        type="button"
-                        onClick={() => setSearchTerm('')}
-                        style={{
-                          position: 'absolute',
-                          right: '0.75rem',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--text-muted)',
-                          fontSize: '1rem',
-                          cursor: 'pointer',
-                          padding: '2px',
-                        }}
-                        title="Kosongkan carian"
-                      >
-                        ✕
-                      </button>
-                    )}
                   </div>
 
-                  {/* View Mode Switcher: [ 📱 Kad ] [ 📑 Jadual ] */}
-                  <div className="view-mode-toggle" title="Tukar Mod Paparan">
+                  {/* 7 Dropdowns Penapis */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                    
+                    {/* 1. Jenis */}
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ minWidth: '100px' }}
+                      value={filterJenis}
+                      onChange={(e) => setFilterJenis(e.target.value)}
+                    >
+                      <option value="Semua Jenis">Semua Jenis</option>
+                      <option value="PERALATAN">PERALATAN</option>
+                      <option value="BARANG LUAK">BARANG LUAK</option>
+                    </select>
+
+                    {/* 2. Kategori */}
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ minWidth: '195px' }}
+                      value={filterKategori}
+                      onChange={(e) => setFilterKategori(e.target.value)}
+                    >
+                      <option value="Semua Kategori" style={{ background: '#0f172a', color: '#f1f5f9' }}>Semua Kategori</option>
+                      {workshopCategories.map(cat => (
+                        <option key={cat.code} value={cat.code} style={{ background: '#0f172a', color: '#f1f5f9' }}>
+                          {cat.code} — {cat.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* 3. Kod / SKU */}
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer max-w-[120px]"
+                      value={filterKod}
+                      onChange={(e) => setFilterKod(e.target.value)}
+                    >
+                      <option value="Semua Kod">Semua Kod</option>
+                      {uniqueSkus.map(sku => (
+                        <option key={sku} value={sku}>{sku}</option>
+                      ))}
+                    </select>
+
+                    {/* 4. Seksyen */}
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ minWidth: '110px' }}
+                      value={filterSeksyen}
+                      onChange={(e) => setFilterSeksyen(e.target.value)}
+                    >
+                      <option value="Semua Seksyen">Semua Seksyen</option>
+                      {uniqueSeksyens.map(sec => (
+                        <option key={sec} value={sec}>{sec}</option>
+                      ))}
+                    </select>
+
+                    {/* 5. Kedudukan */}
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ minWidth: '110px' }}
+                      value={filterKedudukan}
+                      onChange={(e) => setFilterKedudukan(e.target.value)}
+                    >
+                      <option value="Semua Kedudukan">Semua Kedudukan</option>
+                      {uniqueLocations.map(loc => (
+                        <option key={loc} value={loc}>{loc}</option>
+                      ))}
+                    </select>
+
+                    {/* 6. Status */}
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ minWidth: '110px' }}
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                    >
+                      <option value="Semua Status">Semua Status</option>
+                      <option value="Tersedia">Tersedia</option>
+                      <option value="Stok Rendah">Stok Rendah</option>
+                      <option value="Kehabisan Stok">Kehabisan Stok</option>
+                    </select>
+
+                    {/* 7. Carian Huruf / Abjad */}
+                    <select
+                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
+                      style={{ minWidth: '100px' }}
+                      value={filterAbjad}
+                      onChange={(e) => setFilterAbjad(e.target.value)}
+                    >
+                      <option value="Semua Abjad">Semua Abjad</option>
+                      {Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).map(char => (
+                        <option key={char} value={char}>{char}</option>
+                      ))}
+                    </select>
+
+                    {/* Reset Button */}
                     <button
                       type="button"
-                      className={`view-mode-btn ${itemViewMode === 'card' ? 'active' : ''}`}
-                      onClick={() => handleToggleViewMode('card')}
+                      onClick={handleResetFilters}
+                      title="Reset semua penapis"
+                      style={{
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        backgroundColor: '#1e293b',
+                        border: '1px solid #475569',
+                        color: '#f8fafc',
+                        borderRadius: '0.5rem',
+                        fontSize: '0.75rem',
+                        padding: '0.375rem 0.5rem',
+                        transition: 'background-color 0.15s',
+                        whiteSpace: 'nowrap',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#334155')}
+                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1e293b')}
                     >
-                      <span>📱</span> Kad
-                    </button>
-                    <button
-                      type="button"
-                      className={`view-mode-btn ${itemViewMode === 'table' ? 'active' : ''}`}
-                      onClick={() => handleToggleViewMode('table')}
-                    >
-                      <span>📑</span> Jadual
+                      🔄 Reset
                     </button>
                   </div>
-
-                  {/* Advanced Filter Toggle Button */}
-                  <button
-                    type="button"
-                    className={`advanced-filter-toggle ${[
-                      filterJenis !== 'Semua Jenis',
-                      filterKategori !== 'Semua Kategori',
-                      filterKod !== 'Semua Kod',
-                      filterSeksyen !== 'Semua Seksyen',
-                      filterKedudukan !== 'Semua Kedudukan',
-                      filterStatus !== 'Semua Status',
-                      filterAbjad !== 'Semua Abjad',
-                    ].some(Boolean) ? 'has-active' : ''}`}
-                    onClick={() => setShowAdvancedFilters(prev => !prev)}
-                    title="Buka atau tutup penapis terperinci"
-                  >
-                    <span>⚙️</span>
-                    <span>Penapis Terperinci</span>
-                    <span>{showAdvancedFilters ? '▲' : '▼'}</span>
-                  </button>
                 </div>
 
                 {/* Right side: Action buttons */}
                 {(user.role === 'Ketua Bengkel' || user.role === 'PIC') && (
-                  <div className="inventory-actions-responsive" style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
                     <button
                       id="import-excel-btn"
                       onClick={() => setIsImportModalOpen(true)}
@@ -1984,207 +1920,6 @@ export const DashboardPage: React.FC = () => {
                 )}
 
               </div>
-
-              {/* Row 2: 1-Tap Quick Filter Chips */}
-              <div className="quick-chips-scroll">
-                <button
-                  type="button"
-                  className={`filter-chip ${filterJenis === 'Semua Jenis' && filterStatus === 'Semua Status' ? 'active' : ''}`}
-                  onClick={() => {
-                    setFilterJenis('Semua Jenis');
-                    setFilterStatus('Semua Status');
-                  }}
-                >
-                  Semua ({items.length})
-                </button>
-                <button
-                  type="button"
-                  className={`filter-chip ${filterJenis === 'PERALATAN' ? 'active' : ''}`}
-                  onClick={() => setFilterJenis(prev => prev === 'PERALATAN' ? 'Semua Jenis' : 'PERALATAN')}
-                >
-                  🔧 Peralatan ({items.filter(i => i.kategori === 'peralatan').length})
-                </button>
-                <button
-                  type="button"
-                  className={`filter-chip ${filterJenis === 'BARANG LUAK' ? 'active' : ''}`}
-                  onClick={() => setFilterJenis(prev => prev === 'BARANG LUAK' ? 'Semua Jenis' : 'BARANG LUAK')}
-                >
-                  🧪 Barang Luak ({items.filter(i => i.kategori === 'habis_pakai').length})
-                </button>
-                <button
-                  type="button"
-                  className={`filter-chip ${filterStatus === 'Stok Rendah' ? 'active' : ''}`}
-                  onClick={() => setFilterStatus(prev => prev === 'Stok Rendah' ? 'Semua Status' : 'Stok Rendah')}
-                >
-                  ⚠️ Stok Rendah ({items.filter(i => i.quantity > 0 && i.quantity <= i.stokMinima).length})
-                </button>
-                <button
-                  type="button"
-                  className={`filter-chip ${filterStatus === 'Kehabisan Stok' ? 'active' : ''}`}
-                  onClick={() => setFilterStatus(prev => prev === 'Kehabisan Stok' ? 'Semua Status' : 'Kehabisan Stok')}
-                >
-                  🔴 Habis ({items.filter(i => i.quantity === 0).length})
-                </button>
-                {[
-                  filterJenis !== 'Semua Jenis',
-                  filterKategori !== 'Semua Kategori',
-                  filterKod !== 'Semua Kod',
-                  filterSeksyen !== 'Semua Seksyen',
-                  filterKedudukan !== 'Semua Kedudukan',
-                  filterStatus !== 'Semua Status',
-                  filterAbjad !== 'Semua Abjad',
-                  searchTerm !== '',
-                ].some(Boolean) && (
-                  <button
-                    type="button"
-                    className="filter-chip"
-                    onClick={handleResetFilters}
-                    style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', borderColor: 'rgba(239, 68, 68, 0.3)' }}
-                    title="Kosongkan semua penapis"
-                  >
-                    🔄 Reset (
-                    {
-                      [
-                        filterJenis !== 'Semua Jenis',
-                        filterKategori !== 'Semua Kategori',
-                        filterKod !== 'Semua Kod',
-                        filterSeksyen !== 'Semua Seksyen',
-                        filterKedudukan !== 'Semua Kedudukan',
-                        filterStatus !== 'Semua Status',
-                        filterAbjad !== 'Semua Abjad',
-                        searchTerm !== '',
-                      ].filter(Boolean).length
-                    }
-                    )
-                  </button>
-                )}
-              </div>
-
-              {/* Row 3: Collapsible Advanced Filter Dropdowns */}
-              {showAdvancedFilters && (
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-                  gap: '0.6rem',
-                  padding: '0.85rem',
-                  background: 'rgba(15, 23, 42, 0.65)',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                }}>
-                  {/* 1. Jenis */}
-                  <div>
-                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>JENIS</label>
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ width: '100%', height: '36px' }}
-                      value={filterJenis}
-                      onChange={(e) => setFilterJenis(e.target.value)}
-                    >
-                      <option value="Semua Jenis">Semua Jenis</option>
-                      <option value="PERALATAN">PERALATAN</option>
-                      <option value="BARANG LUAK">BARANG LUAK</option>
-                    </select>
-                  </div>
-
-                  {/* 2. Kategori */}
-                  <div>
-                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>KATEGORI</label>
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ width: '100%', height: '36px' }}
-                      value={filterKategori}
-                      onChange={(e) => setFilterKategori(e.target.value)}
-                    >
-                      <option value="Semua Kategori">Semua Kategori</option>
-                      {workshopCategories.map(cat => (
-                        <option key={cat.code} value={cat.code}>
-                          {cat.code} — {cat.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* 3. Kod / SKU */}
-                  <div>
-                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>KOD / SKU</label>
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ width: '100%', height: '36px' }}
-                      value={filterKod}
-                      onChange={(e) => setFilterKod(e.target.value)}
-                    >
-                      <option value="Semua Kod">Semua Kod</option>
-                      {uniqueSkus.map(sku => (
-                        <option key={sku} value={sku}>{sku}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* 4. Seksyen */}
-                  <div>
-                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>SEKSYEN</label>
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ width: '100%', height: '36px' }}
-                      value={filterSeksyen}
-                      onChange={(e) => setFilterSeksyen(e.target.value)}
-                    >
-                      <option value="Semua Seksyen">Semua Seksyen</option>
-                      {uniqueSeksyens.map(sec => (
-                        <option key={sec} value={sec}>{sec}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* 5. Kedudukan */}
-                  <div>
-                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>KEDUDUKAN</label>
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ width: '100%', height: '36px' }}
-                      value={filterKedudukan}
-                      onChange={(e) => setFilterKedudukan(e.target.value)}
-                    >
-                      <option value="Semua Kedudukan">Semua Kedudukan</option>
-                      {uniqueLocations.map(loc => (
-                        <option key={loc} value={loc}>{loc}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* 6. Status */}
-                  <div>
-                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>STATUS</label>
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ width: '100%', height: '36px' }}
-                      value={filterStatus}
-                      onChange={(e) => setFilterStatus(e.target.value)}
-                    >
-                      <option value="Semua Status">Semua Status</option>
-                      <option value="Tersedia">Tersedia</option>
-                      <option value="Stok Rendah">Stok Rendah</option>
-                      <option value="Kehabisan Stok">Kehabisan Stok</option>
-                    </select>
-                  </div>
-
-                  {/* 7. Abjad */}
-                  <div>
-                    <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>ABJAD (A-Z)</label>
-                    <select
-                      className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
-                      style={{ width: '100%', height: '36px' }}
-                      value={filterAbjad}
-                      onChange={(e) => setFilterAbjad(e.target.value)}
-                    >
-                      <option value="Semua Abjad">Semua Abjad</option>
-                      {Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).map(char => (
-                        <option key={char} value={char}>{char}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              )}
             </div>
 
             {searchedItems.length === 0 ? (
@@ -2193,135 +1928,14 @@ export const DashboardPage: React.FC = () => {
                 <h4>Tiada hasil dijumpai</h4>
                 <p>Cuba kata kunci carian yang lain atau daftarkan barang baru.</p>
               </div>
-            ) : itemViewMode === 'card' ? (
-              <div className="inventory-card-grid">
-                {searchedItems.map((item) => {
-                  const skuPrefix = item.sku.split('-')[0].toUpperCase();
-                  const kategoriCode = skuPrefix || (item.kategori === 'peralatan' ? 'AT' : 'AK');
-                  const badgeStyles = getCategoryBadgeStyles(kategoriCode);
-                  const isOut = item.quantity === 0;
-                  const isLow = !isOut && item.quantity <= item.stokMinima;
-
-                  return (
-                    <div key={item.id} className="inventory-item-card">
-                      {/* Card Header */}
-                      <div className="item-card-header">
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <div className="item-card-name">{item.name}</div>
-                          <div className="item-card-sub">
-                            {item.brand ? <span style={{ textTransform: 'uppercase', marginRight: '6px', color: '#94a3b8' }}>{item.brand} • </span> : null}
-                            <span className="sku-text">{item.sku}</span>
-                          </div>
-                        </div>
-                        <span
-                          className="item-card-badge"
-                          style={{
-                            background: badgeStyles.bg,
-                            color: badgeStyles.color,
-                            border: `1px solid ${badgeStyles.border}`,
-                          }}
-                        >
-                          {kategoriCode}
-                        </span>
-                      </div>
-
-                      {/* Card Meta Grid */}
-                      <div className="item-card-meta-grid">
-                        <div className="item-meta-item">
-                          <span className="item-meta-label">Kedudukan</span>
-                          <span className="item-meta-value">📍 {item.location || '-'}</span>
-                        </div>
-                        <div className="item-meta-item">
-                          <span className="item-meta-label">Jenis</span>
-                          <span className="item-meta-value">
-                            {item.kategori === 'peralatan' ? '🔧 Peralatan' : '🧪 Barang Luak'}
-                          </span>
-                        </div>
-                        <div className="item-meta-item">
-                          <span className="item-meta-label">Status</span>
-                          <span className="item-meta-value">
-                            {isOut ? (
-                              <span className="badge-status out">Habis Stok</span>
-                            ) : isLow ? (
-                              <span className="badge-status low">Stok Rendah</span>
-                            ) : (
-                              <span className="badge-status available">Tersedia</span>
-                            )}
-                          </span>
-                        </div>
-                        <div className="item-meta-item">
-                          <span className="item-meta-label">Baki Stok</span>
-                          <span
-                            className="item-meta-value item-stock-highlight"
-                            style={{
-                              color: isOut ? 'var(--danger)' : isLow ? 'var(--warning)' : 'var(--text-primary)'
-                            }}
-                          >
-                            {item.quantity}
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                              / {item.totalQuantity} {item.unit}
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Card Actions */}
-                      <div className="item-card-actions">
-                        {user.role === 'Pensyarah' ? (
-                          <button
-                            onClick={() => handleOpenBorrowModal(item)}
-                            className="btn item-card-btn-primary"
-                            disabled={isOut}
-                            style={{
-                              background: item.kategori === 'peralatan'
-                                ? 'linear-gradient(135deg, var(--primary), #4338ca)'
-                                : 'linear-gradient(135deg, var(--secondary), #0e7490)',
-                            }}
-                          >
-                            {item.kategori === 'peralatan' ? '🔀 Mohon Pinjam' : '🧪 Mohon Ambil'}
-                          </button>
-                        ) : (
-                          <div className="item-card-btn-row">
-                            <button
-                              onClick={() => {
-                                setSelectedItem(item);
-                                setIsTransferModalOpen(true);
-                              }}
-                              className="btn btn-secondary item-card-action-btn"
-                              disabled={isOut}
-                              title="Pindah ke stor lain"
-                              style={{ color: '#c084fc', borderColor: 'rgba(192,132,252,0.3)', background: 'rgba(192,132,252,0.08)' }}
-                            >
-                              ⇄ Pindah
-                            </button>
-                            <button
-                              onClick={() => handleOpenEditModal(item)}
-                              className="btn btn-secondary item-card-action-btn"
-                              title="Kemas kini maklumat barang"
-                              style={{ color: '#818cf8', borderColor: 'rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)' }}
-                            >
-                              ✏️ Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteItem(item.id)}
-                              className="btn btn-danger item-card-action-btn"
-                              title="Padam barang dari stor"
-                            >
-                              🗑️ Padam
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             ) : (
-              <div className="table-container">
-                <div className="table-scroll-hint">
-                  <span>👈</span> Leret ke kiri/kanan untuk melihat semua maklumat <span>👉</span>
+              <>
+                <div className="mobile-table-hint">
+                  <span>👉</span>
+                  <span>Tatal ke kanan untuk melihat semua lajur</span>
                 </div>
-                <table className="custom-table">
+                <div className="table-container">
+                  <table className="custom-table">
                   <thead>
                     <tr>
                       <th style={{ width: '48px', textAlign: 'center' }}>BIL</th>
@@ -2487,6 +2101,7 @@ export const DashboardPage: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+            </>
             )}
           </div>
         )}
@@ -2494,7 +2109,7 @@ export const DashboardPage: React.FC = () => {
         {activeTab === 'pinjam' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {/* ── 2 Sub-Tabs Navigation (Tab 1: Rekod Pinjaman Aktif [Utama/Default], Tab 2: Permohonan Menunggu Kelulusan) ── */}
-            <div className="loan-subtabs-responsive" style={{
+            <div style={{
               display: 'flex',
               gap: '0.6rem',
               borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
@@ -2600,7 +2215,7 @@ export const DashboardPage: React.FC = () => {
                   <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>Tiada peralatan yang sedang dipinjam ketika ini.</p>
                 ) : (
                   <div className="table-container">
-                    <table className="custom-table">
+                    <table className="custom-table responsive-card-table">
                       <thead>
                         <tr>
                           <th>Peminjam</th>
@@ -2617,13 +2232,13 @@ export const DashboardPage: React.FC = () => {
                           const itemUnit = items.find(i => i.id === loan.itemId)?.unit || 'unit';
                           return (
                             <tr key={loan.id}>
-                              <td style={{ fontWeight: 600 }}>{loan.borrowerName} ({loan.borrowerRole})</td>
-                              <td>{loan.itemName}</td>
-                              <td>{loan.quantity} {itemUnit}</td>
-                              <td>{loan.dateBorrowed}</td>
-                              <td style={{ color: 'var(--warning)', fontWeight: 500 }}>{loan.tarikhJangkaPulang || '-'}</td>
-                              <td><span className="status-badge approved">Diluluskan</span></td>
-                              <td style={{ textAlign: 'right' }}>
+                              <td data-label="Peminjam" style={{ fontWeight: 600 }}>{loan.borrowerName} ({loan.borrowerRole})</td>
+                              <td data-label="Peralatan">{loan.itemName}</td>
+                              <td data-label="Kuantiti">{loan.quantity} {itemUnit}</td>
+                              <td data-label="Tarikh Pinjam">{loan.dateBorrowed}</td>
+                              <td data-label="Target Pulang" style={{ color: 'var(--warning)', fontWeight: 500 }}>{loan.tarikhJangkaPulang || '-'}</td>
+                              <td data-label="Status"><span className="status-badge approved">Diluluskan</span></td>
+                              <td data-label="Tindakan" style={{ textAlign: 'right' }}>
                                 {(user.name === loan.borrowerName || user.role === 'Ketua Bengkel' || user.role === 'PIC') ? (
                                   <button
                                     id={`return-btn-${loan.id}`}
@@ -3187,7 +2802,7 @@ export const DashboardPage: React.FC = () => {
                   ) : (
                     <>
                       <div className="table-container">
-                        <table className="custom-table">
+                        <table className="custom-table responsive-card-table">
                           <thead>
                             <tr>
                               <th>1. PEMINJAM / PENGAMBIL</th>
@@ -3207,7 +2822,7 @@ export const DashboardPage: React.FC = () => {
                               return (
                                 <tr key={t.id}>
                                   {/* 1. PEMINJAM / PENGAMBIL */}
-                                  <td>
+                                  <td data-label="Peminjam">
                                     <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t.borrowerName}</div>
                                     <div style={{ fontSize: '0.73rem', color: 'var(--text-secondary)' }}>{t.borrowerRole}</div>
                                     {t.purpose && (
@@ -3218,10 +2833,10 @@ export const DashboardPage: React.FC = () => {
                                   </td>
 
                                   {/* 2. BARANG */}
-                                  <td style={{ fontWeight: 600 }}>{t.itemName}</td>
+                                  <td data-label="Barang" style={{ fontWeight: 600 }}>{t.itemName}</td>
 
                                   {/* 3. JENIS */}
-                                  <td>
+                                  <td data-label="Jenis">
                                     {t.kategori === 'peralatan' ? (
                                       <span style={{
                                         display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
@@ -3244,13 +2859,13 @@ export const DashboardPage: React.FC = () => {
                                   </td>
 
                                   {/* 4. KUANTITI */}
-                                  <td>
+                                  <td data-label="Kuantiti">
                                     <strong style={{ fontSize: '0.9rem' }}>{t.quantity}</strong>{' '}
                                     <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{itemUnit}</span>
                                   </td>
 
                                   {/* 5. TARIKH PINJAM / AMBIL */}
-                                  <td>
+                                  <td data-label="Tarikh Pinjam">
                                     <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{t.dateBorrowed}</div>
                                     {t.tarikhMahuPinjam && (
                                       <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
@@ -3260,7 +2875,7 @@ export const DashboardPage: React.FC = () => {
                                   </td>
 
                                   {/* 6. TARIKH PULANG */}
-                                  <td>
+                                  <td data-label="Tarikh Pulang">
                                     {t.kategori === 'habis_pakai' || t.status === 'Telah Diambil' || sLabel === 'DIAMBIL (HABIS)' ? (
                                       <span style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500, fontStyle: 'italic' }}>N/A (Barang Luak)</span>
                                     ) : (
@@ -3275,7 +2890,7 @@ export const DashboardPage: React.FC = () => {
                                   </td>
 
                                   {/* 7. STATUS */}
-                                  <td>
+                                  <td data-label="Status">
                                     {sLabel === 'DIPINJAM' && (
                                       <span className="status-badge approved" style={{ textTransform: 'uppercase' }}>
                                         DIPINJAM
@@ -3429,7 +3044,7 @@ export const DashboardPage: React.FC = () => {
                   ) : (
                     <>
                       <div className="table-container">
-                        <table className="custom-table">
+                        <table className="custom-table responsive-card-table">
                           <thead>
                             <tr>
                               <th>Masa</th>
@@ -3447,12 +3062,12 @@ export const DashboardPage: React.FC = () => {
                               const badge = BADGE_CONFIG[log.type];
                               return (
                                 <tr key={log.id}>
-                                  <td>
+                                  <td data-label="Masa">
                                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                                       {log.timestamp}
                                     </span>
                                   </td>
-                                  <td>
+                                  <td data-label="Tindakan">
                                     <span style={{
                                       fontSize: '0.73rem', fontWeight: 700,
                                       background: badge.bg, color: badge.color,
@@ -3463,9 +3078,9 @@ export const DashboardPage: React.FC = () => {
                                       {badge.icon} {badge.label}
                                     </span>
                                   </td>
-                                  <td style={{ fontWeight: 600 }}>{log.itemName}</td>
-                                  <td><span className="sku-text">{log.sku}</span></td>
-                                  <td>
+                                  <td data-label="Barang" style={{ fontWeight: 600 }}>{log.itemName}</td>
+                                  <td data-label="SKU"><span className="sku-text">{log.sku}</span></td>
+                                  <td data-label="Kuantiti">
                                     {log.type === 'KEMASKINI' && log.oldQuantity !== undefined ? (
                                       <span>
                                         <span style={{ color: 'var(--danger)', textDecoration: 'line-through', marginRight: '0.3rem' }}>
@@ -3478,7 +3093,7 @@ export const DashboardPage: React.FC = () => {
                                       <span><strong>{log.quantity}</strong> <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{log.unit}</span></span>
                                     )}
                                   </td>
-                                  <td style={{ fontSize: '0.82rem' }}>
+                                  <td data-label="Stor" style={{ fontSize: '0.82rem' }}>
                                     {log.type === 'PINDAH' ? (
                                       <span>
                                         <span style={{ color: '#a78bfa' }}>{log.store}</span>
@@ -3489,11 +3104,11 @@ export const DashboardPage: React.FC = () => {
                                       <span style={{ color: 'var(--text-secondary)' }}>{log.store}</span>
                                     )}
                                   </td>
-                                  <td>
+                                  <td data-label="Oleh">
                                     <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{log.performedBy}</div>
                                     <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{log.performedByRole}</div>
                                   </td>
-                                  <td style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontStyle: log.catatan ? 'normal' : 'italic' }}>
+                                  <td data-label="Catatan" style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontStyle: log.catatan ? 'normal' : 'italic' }}>
                                     {log.catatan || <span style={{ opacity: 0.4 }}>—</span>}
                                   </td>
                                 </tr>
@@ -3680,7 +3295,7 @@ export const DashboardPage: React.FC = () => {
 
               return (
                 <div className="table-responsive" style={{ overflowX: 'auto' }}>
-                  <table className="inventory-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <table className="inventory-table responsive-card-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr>
                         <th style={{ textAlign: 'left', padding: '0.9rem 1rem' }}>Nama Penuh Pensyarah / Staf</th>
@@ -3711,7 +3326,7 @@ export const DashboardPage: React.FC = () => {
 
                         return (
                           <tr key={member.id} style={{ borderBottom: '1px solid var(--card-border)' }}>
-                            <td style={{ padding: '0.9rem 1rem' }}>
+                            <td data-label="Ahli" style={{ padding: '0.9rem 1rem' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                                 {memberAvatar ? (
                                   <img
@@ -3777,7 +3392,7 @@ export const DashboardPage: React.FC = () => {
                                 </div>
                               </div>
                             </td>
-                            <td style={{ textAlign: 'center', padding: '0.9rem 1rem' }}>
+                            <td data-label="Peranan" style={{ textAlign: 'center', padding: '0.9rem 1rem' }}>
                               <span
                                 style={{
                                   display: 'inline-flex',
@@ -3796,10 +3411,10 @@ export const DashboardPage: React.FC = () => {
                                 <span>{member.role}</span>
                               </span>
                             </td>
-                            <td style={{ textAlign: 'center', padding: '0.9rem 1rem', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+                            <td data-label="Tarikh Daftar" style={{ textAlign: 'center', padding: '0.9rem 1rem', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
                               {formattedDate}
                             </td>
-                            <td style={{ textAlign: 'center', padding: '0.9rem 1rem' }}>
+                            <td data-label="Tindakan" style={{ textAlign: 'center', padding: '0.9rem 1rem' }}>
                               <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}>
                                 <button
                                   type="button"
@@ -4459,7 +4074,7 @@ export const DashboardPage: React.FC = () => {
                   <div>
                     <h2 className="modal-title" style={{ margin: 0, fontSize: '1.25rem' }}>Tambah Barang Baru</h2>
                     <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                      {user.selectedStore} · {user.workshop === 'Teknologi Penyejukan dan Penyamanan Udara' ? 'TPPU' : user.workshop}
+                      {user.selectedStore} · {user.workshop}
                     </p>
                   </div>
                 </div>
@@ -4764,7 +4379,7 @@ export const DashboardPage: React.FC = () => {
                   <div>
                     <h2 className="modal-title" style={{ margin: 0, fontSize: '1.25rem' }}>Kemaskini Barangan</h2>
                     <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                      {user.selectedStore} · {user.workshop === 'Teknologi Penyejukan dan Penyamanan Udara' ? 'TPPU' : user.workshop}
+                      {user.selectedStore} · {user.workshop}
                     </p>
                   </div>
                 </div>
@@ -5393,80 +5008,6 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Mobile Bottom Navigation Bar (Phones & Small Tablets) */}
-      <nav className="mobile-bottom-nav" aria-label="Navigasi Mudah Alih">
-        <button
-          type="button"
-          className={`mobile-bottom-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-          onClick={() => navigateTab('dashboard')}
-        >
-          <span className="bottom-icon">📊</span>
-          <span>Ringkasan</span>
-        </button>
-
-        <button
-          type="button"
-          className={`mobile-bottom-item ${activeTab === 'inventori' ? 'active' : ''}`}
-          onClick={() => navigateTab('inventori')}
-        >
-          <span className="bottom-icon">📦</span>
-          <span>Inventori</span>
-          <span className="mobile-bottom-badge" style={{ backgroundColor: 'var(--primary)' }}>
-            {totalItemTypes}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={`mobile-bottom-item ${activeTab === 'pinjam' ? 'active' : ''}`}
-          onClick={() => {
-            navigateTab('pinjam');
-            setPinjamActiveSubTab('aktif');
-          }}
-        >
-          <span className="bottom-icon">🔄</span>
-          <span>Pinjam</span>
-          {pendingApprovals.length > 0 && (user.role === 'Ketua Bengkel' || user.role === 'PIC') && (
-            <span className="mobile-bottom-badge">
-              {pendingApprovals.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          className={`mobile-bottom-item ${activeTab === 'sejarah' ? 'active' : ''}`}
-          onClick={() => {
-            navigateTab('sejarah');
-            const now = Date.now();
-            setLastViewedAuditLog(now);
-            localStorage.setItem(auditLogStorageKey, String(now));
-          }}
-        >
-          <span className="bottom-icon">📜</span>
-          <span>Sejarah</span>
-          {unreadAuditLogsCount > 0 && (
-            <span className="mobile-bottom-badge">
-              {unreadAuditLogsCount}
-            </span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          className={`mobile-bottom-item ${isMobileMenuOpen || activeTab === 'notifikasi' || activeTab === 'ahli' || activeTab === 'tetapan' ? 'active' : ''}`}
-          onClick={() => setIsMobileMenuOpen(prev => !prev)}
-        >
-          <span className="bottom-icon">☰</span>
-          <span>Menu</span>
-          {filteredNotifications.length > 0 && (
-            <span className="mobile-bottom-badge" style={{ backgroundColor: 'var(--accent)' }}>
-              {filteredNotifications.length}
-            </span>
-          )}
-        </button>
-      </nav>
     </div>
   );
 };
