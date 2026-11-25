@@ -3,7 +3,7 @@ import { useInventory } from '../context/InventoryContext';
 import type { UserRole, WorkshopType, UserAccount } from '../types';
 
 export const RegisterPage: React.FC = () => {
-  const { userAccounts, loginWithPin, registerNewAccount } = useInventory();
+  const { userAccounts, loginWithPin, registerNewAccount, theme, toggleTheme } = useInventory();
 
   // ── Tabs Navigasi: 'login' (Lalai / Default) | 'register' ──
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
@@ -123,7 +123,20 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="auth-wrapper" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+    <div className="auth-wrapper" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', position: 'relative' }}>
+      <div className="floating-theme-toggle">
+        <button
+          type="button"
+          id="theme-toggle-auth-btn"
+          className="theme-toggle-btn"
+          onClick={toggleTheme}
+          title={theme === 'light' ? 'Tukar ke Mod Malam (🌙)' : 'Tukar ke Mod Pagi (☀️)'}
+          aria-label="Tukar Tema Pagi / Malam"
+        >
+          <span className="theme-toggle-icon">{theme === 'light' ? '☀️' : '🌙'}</span>
+          <span className="theme-toggle-text">{theme === 'light' ? 'Mod Pagi' : 'Mod Malam'}</span>
+        </button>
+      </div>
       <div className="auth-card glass-panel" style={{ width: '100%', maxWidth: '520px', borderRadius: '18px', padding: '2.25rem', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)' }}>
         
         {/* Header Logo & Tajuk */}

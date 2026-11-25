@@ -137,6 +137,8 @@ export const DashboardPage: React.FC = () => {
     orgSettings,
     updateOrgSettings,
     updateUserProfile,
+    theme,
+    toggleTheme,
   } = useInventory();
 
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -1076,6 +1078,18 @@ export const DashboardPage: React.FC = () => {
               <span className="user-role-badge">{user.role}</span>
             </div>
           </div>
+          <button
+            type="button"
+            className="theme-toggle-btn"
+            onClick={toggleTheme}
+            title={theme === 'light' ? 'Tukar ke Mod Malam (🌙)' : 'Tukar ke Mod Pagi (☀️)'}
+            style={{ width: '100%', justifyContent: 'center' }}
+          >
+            <span className="theme-toggle-icon">{theme === 'light' ? '☀️' : '🌙'}</span>
+            {!isSidebarCollapsed && (
+              <span className="theme-toggle-text">{theme === 'light' ? 'Mod Pagi' : 'Mod Malam'}</span>
+            )}
+          </button>
           <button id="logout-btn" onClick={logout} className="btn btn-secondary btn-logout" title="Keluar Sistem">
             {isSidebarCollapsed ? '🚪' : 'Keluar Sistem'}
           </button>
@@ -1115,12 +1129,25 @@ export const DashboardPage: React.FC = () => {
               <p>{user.workshop} / {user.selectedStore}</p>
             </div>
           </div>
-          <div className="store-indicator">
-            <div className="store-indicator-dot"></div>
-            <span className="store-indicator-text">{user.selectedStore}</span>
-            <button id="change-store-btn" onClick={() => selectStore('')} className="btn-change-store">
-              Tukar Stor
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              id="theme-toggle-header-btn"
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              title={theme === 'light' ? 'Tukar ke Mod Malam (🌙)' : 'Tukar ke Mod Pagi (☀️)'}
+              aria-label="Tukar Tema Pagi / Malam"
+            >
+              <span className="theme-toggle-icon">{theme === 'light' ? '☀️' : '🌙'}</span>
+              <span className="theme-toggle-text">{theme === 'light' ? 'Mod Pagi' : 'Mod Malam'}</span>
             </button>
+            <div className="store-indicator">
+              <div className="store-indicator-dot"></div>
+              <span className="store-indicator-text">{user.selectedStore}</span>
+              <button id="change-store-btn" onClick={() => selectStore('')} className="btn-change-store">
+                Tukar Stor
+              </button>
+            </div>
           </div>
         </header>
 
@@ -1667,9 +1694,9 @@ export const DashboardPage: React.FC = () => {
                       value={filterKategori}
                       onChange={(e) => setFilterKategori(e.target.value)}
                     >
-                      <option value="Semua Kategori" style={{ background: '#0f172a', color: '#f1f5f9' }}>Semua Kategori</option>
+                      <option value="Semua Kategori">Semua Kategori</option>
                       {workshopCategories.map(cat => (
-                        <option key={cat.code} value={cat.code} style={{ background: '#0f172a', color: '#f1f5f9' }}>
+                        <option key={cat.code} value={cat.code}>
                           {cat.code} — {cat.label}
                         </option>
                       ))}
@@ -1749,17 +1776,15 @@ export const DashboardPage: React.FC = () => {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.3rem',
-                        backgroundColor: '#1e293b',
-                        border: '1px solid #475569',
-                        color: '#f8fafc',
+                        backgroundColor: 'var(--card-bg)',
+                        border: '1px solid var(--card-border)',
+                        color: 'var(--text-primary)',
                         borderRadius: '0.5rem',
                         fontSize: '0.75rem',
                         padding: '0.375rem 0.5rem',
                         transition: 'background-color 0.15s',
                         whiteSpace: 'nowrap',
                       }}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#334155')}
-                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1e293b')}
                     >
                       🔄 Reset
                     </button>
@@ -2746,7 +2771,7 @@ export const DashboardPage: React.FC = () => {
                       className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
                       value={historyJenis}
                       onChange={(e) => setHistoryJenis(e.target.value)}
-                      style={{ minWidth: '110px', background: '#0f172a' }}
+                      style={{ minWidth: '110px' }}
                     >
                       <option value="Semua">Semua Jenis</option>
                       <option value="Peralatan">🔧 Peralatan</option>
@@ -2758,7 +2783,7 @@ export const DashboardPage: React.FC = () => {
                       className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
                       value={historyStatus}
                       onChange={(e) => setHistoryStatus(e.target.value)}
-                      style={{ minWidth: '130px', background: '#0f172a' }}
+                      style={{ minWidth: '130px' }}
                     >
                       <option value="Semua">Semua Status</option>
                       <option value="DIPINJAM">DIPINJAM</option>
@@ -2772,7 +2797,7 @@ export const DashboardPage: React.FC = () => {
                       className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
                       value={historyTarikhRange}
                       onChange={(e) => setHistoryTarikhRange(e.target.value)}
-                      style={{ minWidth: '120px', background: '#0f172a' }}
+                      style={{ minWidth: '120px' }}
                     >
                       <option value="Semua Tarikh">Semua Tarikh</option>
                       <option value="30">30 Hari Terakhir</option>
@@ -2785,7 +2810,7 @@ export const DashboardPage: React.FC = () => {
                       className="filter-dropdown-select text-white rounded-lg focus:ring-1 focus:ring-blue-500 text-xs py-1.5 px-2 outline-none cursor-pointer"
                       value={historySort}
                       onChange={(e) => setHistorySort(e.target.value)}
-                      style={{ minWidth: '110px', background: '#0f172a' }}
+                      style={{ minWidth: '110px' }}
                     >
                       <option value="Terkini">⏰ Terkini</option>
                       <option value="Terlama">⏰ Terlama</option>

@@ -33,6 +33,8 @@ interface InventoryContextType {
   requestTransfer: (sourceItemId: string, targetStore: string, quantity: number, catatan?: string) => void;
   approveTransfer: (transferId: string) => void;
   rejectTransfer: (transferId: string) => void;
+  theme: 'dark' | 'light';
+  toggleTheme: () => void;
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
@@ -148,6 +150,30 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
     return defaultOrgSettings;
   });
+
+  // Theme state: 'dark' (Mod Malam) | 'light' (Mod Pagi)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      const saved = localStorage.getItem('kv_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch {
+      // ignore
+    }
+    return 'dark'; // Default: Mod Malam
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('kv_theme', theme);
+    } catch {
+      // ignore
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   useEffect(() => {
     localStorage.setItem('kv_organization_settings', JSON.stringify(orgSettings));
@@ -852,6 +878,8 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         requestTransfer,
         approveTransfer,
         rejectTransfer,
+        theme,
+        toggleTheme,
       }}
     >
       {children}

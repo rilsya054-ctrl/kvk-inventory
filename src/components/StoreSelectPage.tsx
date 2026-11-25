@@ -3,7 +3,7 @@ import { useInventory } from '../context/InventoryContext';
 import { WORKSHOP_STORES } from '../types';
 
 export const StoreSelectPage: React.FC = () => {
-  const { user, selectStore, logout } = useInventory();
+  const { user, selectStore, logout, theme, toggleTheme } = useInventory();
 
   if (!user) return null;
 
@@ -45,7 +45,20 @@ export const StoreSelectPage: React.FC = () => {
   };
 
   return (
-    <div className="store-wrapper">
+    <div className="store-wrapper" style={{ position: 'relative' }}>
+      <div className="floating-theme-toggle">
+        <button
+          type="button"
+          id="theme-toggle-store-btn"
+          className="theme-toggle-btn"
+          onClick={toggleTheme}
+          title={theme === 'light' ? 'Tukar ke Mod Malam (🌙)' : 'Tukar ke Mod Pagi (☀️)'}
+          aria-label="Tukar Tema Pagi / Malam"
+        >
+          <span className="theme-toggle-icon">{theme === 'light' ? '☀️' : '🌙'}</span>
+          <span className="theme-toggle-text">{theme === 'light' ? 'Mod Pagi' : 'Mod Malam'}</span>
+        </button>
+      </div>
       <div className="store-container">
         <div className="store-header">
           <span className="workshop-badge">{user.workshop}</span>
